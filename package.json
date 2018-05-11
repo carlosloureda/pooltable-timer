@@ -1,0 +1,19 @@
+{
+  "name": "pooltable-timer",
+  "version": "1.0.0",
+  "description": "A simple project to bill properly to pool players in recreative pool tables billed by time",
+  "main": "index.js",
+  "scripts": {
+    "test-expect": "mocha **/*.test.js",
+    "test": "jest",
+    "test-watch": "nodemon --exec \"npm test\""
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^22.4.3"
+  },
+  "dependencies": {
+    "lodash": "^4.17.10"
+  }
+}
