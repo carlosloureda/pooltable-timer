@@ -148,9 +148,7 @@ describe('TableEvents', () => {
             expect(users[p1.id].time.init).toBe(1528740000000);
 
             // entries P2
-            console.log("users: ", JSON.stringify(users, undefined,2));
             let p2 = addUserToGame('P2', timeUtils.timeStringToMilliseconds("20:10:00", "11/05/2018"));
-            console.log("users: ", JSON.stringify(users, undefined,2));
             users = getUsers();
             expect(users[p2.id].time.init).toBe(1528740600000);
             // check P1 bill
