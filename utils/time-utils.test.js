@@ -14,6 +14,7 @@ describe('TimeUtils', () => {
     });
     it('#timeStringToMilliseconds', () => {
         let res = timeUtils.timeStringToMilliseconds("20:00:00");
-        expect(res).toBe(1526148000000)
+        // expect(res).toBe(1526148000000) // GMT +2
+        expect(res).toBe(1526140800000) // GMT 0
     });
 });

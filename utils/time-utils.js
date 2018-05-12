@@ -5,6 +5,25 @@ const now = () => {
     return new Date().getTime();
 }
 
+/**
+ * https://stackoverflow.com/questions/6525538/convert-utc-date-time-to-local-date-time
+ * This is for running the tests in remote servers and don't have problems with
+ * dates
+ */
+const convertUTCDateToLocalDate = (date)  => {
+    return new Date(Date.UTC(
+        date.getFullYear(), date.getMonth(), date.getDate(),
+        date.getHours(), date.getMinutes(), date.getSeconds())
+    );
+}
+
+const convertLocalDatetoUTCDate = (date) => {
+    return new Date(
+        date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(),
+        date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds()
+    );
+}
+
 // Forces an hour to milliseconds as timestamp from today
 // DATE FOR TESTS
 const timeStringToMilliseconds = (timeString, dateString=null, delimitter=':') => {
@@ -14,7 +33,9 @@ const timeStringToMilliseconds = (timeString, dateString=null, delimitter=':') =
         const dateSplitted = dateString.split('/');
         date = new Date(parseInt(dateSplitted[2]), parseInt(dateSplitted[1]), parseInt(dateSplitted[0]))
     }
-    return date.setHours(parseInt(timeSplitted[0]),parseInt(timeSplitted[1]), parseInt(timeSplitted[2]), 0);
+    date = new Date(date.setHours(parseInt(timeSplitted[0]),parseInt(timeSplitted[1]), parseInt(timeSplitted[2]), 0));
+    date = convertLocalDatetoUTCDate(date).getTime();
+    return date;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -51,6 +72,7 @@ const roundNumber = (number, decimals) => {
     let sigma = 5/exp;
     return parseFloat(((number * exp + sigma)/exp).toFixed(decimals));
 }
+
 
 module.exports = {
     timeStringToMilliseconds,
