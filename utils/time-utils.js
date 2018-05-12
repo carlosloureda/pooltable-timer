@@ -46,9 +46,16 @@ const secondsElapsed = (timeSecondsInit, timeSecondsEnd) => {
     return timeSecondsEnd - timeSecondsInit;
 }
 
+const roundNumber = (number, decimals) => {
+    let exp = Math.pow(10 ,decimals);
+    let sigma = 5/exp;
+    return parseFloat(((number * exp + sigma)/exp).toFixed(decimals));
+}
+
 module.exports = {
     timeStringToMilliseconds,
     timeStringToSeconds,
     toSeconds,
-    now
+    now,
+    roundNumber
 }
