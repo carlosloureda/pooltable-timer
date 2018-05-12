@@ -133,13 +133,89 @@ describe('TableEvents', () => {
             let payment = roundNumber(totalBilledTime*sigma, 2);
             expect(payment).toBe(9.05);
 
-            // console.log(totalBilledTime);
-            // console.log("time1: ", time1);
-            // console.log("time2: ", time2);
-            // console.log("time3: ", time3);
-            // console.log("time4: ", time4);
+        });
+    });
+
+    describe('Testing a complete game ~EXAMPLE2', () => {
+
+        it('should add and end players 3, 4, 2, 1 in different times and charge them accordingly', () => {
+
+            resetUsers();
+            // entries p1
+            let p1 = addUserToGame('P1', timeUtils.timeStringToMilliseconds("20:00:00", "11/05/2018"));
+            let users = getUsers();
+            expect(users[p1.id].time.init).toBe(1528740000000);
+
+            //TODO: entries into play p2
+            //TODO: we need to accumulate the ammount played to p2
+            //TODO: entries into play p4
+            //TODO: we need to accumulate the ammount played to p1 and p2
+            //TODO: exists the game player p4
+            //TODO: charge p4 its money and accoumulate to p1, p2 that part
+            //TODO: entries into play p3
+            //TODO: we need to accumulate the ammount played to p1 and p2
+            //TODO: exists the game player p3
+            //TODO: charge p3 its money and accoumulate to p1, p2 that part
+            //TODO: exists the game player p2
+            //TODO: charge p2 its money and accoumulate to p1 that part
+            //TODO: exists the game player p1
+            //TODO: charge p1 its money
+
+            // entries P2
+            let p2 = addUserToGame('P2', timeUtils.timeStringToMilliseconds("20:10:00", "11/05/2018"));
+            users = getUsers();
+            expect(users[p2.id].time.init).toBe(1528740600000);
+
+            // entries P4
+            let p4 = addUserToGame('P4', timeUtils.timeStringToMilliseconds("20:45:00", "11/05/2018"));
+            users = getUsers();
+            expect(users[p4.id].time.init).toBe(1528742700000);
+
+            // exits P4
+            tableEvents.chargePlayer(p4.id, timeUtils.timeStringToMilliseconds("21:46:23", "11/05/2018"));
+
+            // entries P3
+            let p3 = addUserToGame('P3', timeUtils.timeStringToMilliseconds("21:50:48", "11/05/2018"));
+            users = getUsers();
+            expect(users[p3.id].time.init).toBe(1528746648000);
+
+            // exits P3
+            tableEvents.chargePlayer(p3.id, timeUtils.timeStringToMilliseconds("21:59:23", "11/05/2018"));
+            // exits P2
+            tableEvents.chargePlayer(p2.id, timeUtils.timeStringToMilliseconds("22:02:25", "11/05/2018"));
+            // exits P1
+            tableEvents.chargePlayer(p1.id, timeUtils.timeStringToMilliseconds("22:15:45", "11/05/2018"));
+
+            // See the results
+            const sigma = 4/(60*60*1000);
+            let time1 = users[p1.id].time.billable;
+            expect(time1).toBe(4072833.333);
+            let payment1 = roundNumber(time1*sigma, 2);
+            expect(payment1).toBe(4.53);
+
+            let time2 = users[p2.id].time.billable;
+            expect(time2).toBe(2672833.333);
+            let payment2 = roundNumber(time2*sigma, 2);
+            expect(payment2).toBe(2.97);
+
+            let time3 = users[p3.id].time.billable;
+            expect(time3).toBe(171666.6667);
+            let payment3 = roundNumber(time3*sigma, 2);
+            expect(payment3).toBe(0.19);
+
+            let time4 = users[p4.id].time.billable;
+            expect(time4).toBe(1227666.667);
+            let payment4 = roundNumber(time4*sigma, 2);
+            expect(payment4).toBe(1.36);
+
+            let totalBilledTime = time1 + time2 +  time3 + time4;
+            expect(totalBilledTime).toBe(8145000);
+            let payment = roundNumber(totalBilledTime*sigma, 2);
+            expect(payment).toBe(9.05);
+
 
         });
+
     });
 
 
@@ -147,6 +223,6 @@ describe('TableEvents', () => {
 
 const roundNumber = (number, decimals) => {
     let exp = Math.pow(10 ,decimals);
-    let _sigma = 5/exp;
-    return parseFloat(((number * exp + _sigma)/exp).toFixed(decimals));
+    let sigma = 5/exp;
+    return parseFloat(((number * exp + sigma)/exp).toFixed(decimals));
 }
