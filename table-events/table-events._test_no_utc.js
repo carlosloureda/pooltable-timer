@@ -1,3 +1,13 @@
+/*
+ Saved this file to backwards compatibilty as my first tests and the
+ documentation which talks about timing  checks for my current
+ GMT +2 time, and remote servers will break, so I decided to move
+ all the parsing to UTC date (GMt 0), so if you read the guide you
+ don't get lost:
+
+ table-events._test_no_utc.js
+*/
+
 const {
     addUserToGame, removeUserFromGame,
     getUsers, getUserByName, reset
@@ -54,10 +64,10 @@ describe('TableEvents', () => {
 
             let users = getUsers();
 
-            expect(users[p1.id].time.init).toBe(1526068800000);
-            expect(users[p2.id].time.init).toBe(1526068800000);
-            expect(users[p3.id].time.init).toBe(1526068800000);
-            expect(users[p4.id].time.init).toBe(1526068800000);
+            expect(users[p1.id].time.init).toBe(1528740000000);
+            expect(users[p2.id].time.init).toBe(1528740000000);
+            expect(users[p3.id].time.init).toBe(1528740000000);
+            expect(users[p4.id].time.init).toBe(1528740000000);
         });
 
         it('should end player 3, 4, 2, 1 in different times and charge them accordingly', () => {
@@ -71,8 +81,8 @@ describe('TableEvents', () => {
             // REMOVE player 3
             tableEvents.chargePlayer(p3.id, timeUtils.timeStringToMilliseconds("20:35:17", "11/05/2018"));
             let users = tableEvents.getUsers();
-            expect(users[p3.id].time.end).toBe(1526070917000);
-            expect(tableEvents.getChargedTime()).toBe(1526070917000);
+            expect(users[p3.id].time.end).toBe(1528742117000);
+            expect(tableEvents.getChargedTime()).toBe(1528742117000);
             expect(tableEvents.getLastChargedId()).toBe(p3.id);
             users = tableEvents.getUsers();
             expect(users[p3.id].time.billable).toBe(529250);
@@ -81,8 +91,8 @@ describe('TableEvents', () => {
             // REMOVE player 4
             tableEvents.chargePlayer(p4.id, timeUtils.timeStringToMilliseconds("21:01:23", "11/05/2018"));
             users = tableEvents.getUsers();
-            expect(users[p4.id].time.end).toBe(1526072483000);
-            expect(tableEvents.getChargedTime()).toBe(1526072483000);
+            expect(users[p4.id].time.end).toBe(1528743683000);
+            expect(tableEvents.getChargedTime()).toBe(1528743683000);
             expect(tableEvents.getLastChargedId()).toBe(p4.id);
             users = tableEvents.getUsers();
             expect(users[p4.id].time.billable).toBe(1051250);
@@ -91,8 +101,8 @@ describe('TableEvents', () => {
             // REMOVE player 2
             tableEvents.chargePlayer(p2.id, timeUtils.timeStringToMilliseconds("21:52:15", "11/05/2018"));
             users = tableEvents.getUsers();
-            expect(users[p2.id].time.end).toBe(1526075535000);
-            expect(tableEvents.getChargedTime()).toBe(1526075535000);
+            expect(users[p2.id].time.end).toBe(1528746735000);
+            expect(tableEvents.getChargedTime()).toBe(1528746735000);
             expect(tableEvents.getLastChargedId()).toBe(p2.id);
             users = tableEvents.getUsers();
             expect(users[p2.id].time.billable).toBe(2577250);
@@ -101,8 +111,8 @@ describe('TableEvents', () => {
             // REMOVE player 1
             tableEvents.chargePlayer(p1.id, timeUtils.timeStringToMilliseconds("22:15:45", "11/05/2018"));
             users = tableEvents.getUsers();
-            expect(users[p1.id].time.end).toBe(1526076945000);
-            expect(tableEvents.getChargedTime()).toBe(1526076945000);
+            expect(users[p1.id].time.end).toBe(1528748145000);
+            expect(tableEvents.getChargedTime()).toBe(1528748145000);
             expect(tableEvents.getLastChargedId()).toBe(p1.id);
             users = tableEvents.getUsers();
             expect(users[p1.id].time.billable).toBe(3987250);
@@ -146,19 +156,19 @@ describe('TableEvents', () => {
             // entries p1
             let p1 = addUserToGame('P1', timeUtils.timeStringToMilliseconds("20:00:00", "11/05/2018"));
             let users = getUsers();
-            expect(users[p1.id].time.init).toBe(1526068800000);
+            expect(users[p1.id].time.init).toBe(1528740000000);
 
             // entries P2
             let p2 = addUserToGame('P2', timeUtils.timeStringToMilliseconds("20:10:00", "11/05/2018"));
             users = getUsers();
-            expect(users[p2.id].time.init).toBe(1526069400000);
+            expect(users[p2.id].time.init).toBe(1528740600000);
             // check P1 bill
             expect(users[p1.id].time.billable).toBe(600000);
 
             // entries P4
             let p4 = addUserToGame('P4', timeUtils.timeStringToMilliseconds("20:45:00", "11/05/2018"));
             users = getUsers();
-            expect(users[p4.id].time.init).toBe(1526071500000);
+            expect(users[p4.id].time.init).toBe(1528742700000);
             // check P2 bill
             expect(users[p2.id].time.billable).toBe(1050000);
             // check P1 bill
@@ -175,7 +185,7 @@ describe('TableEvents', () => {
             // entries P3
             let p3 = addUserToGame('P3', timeUtils.timeStringToMilliseconds("21:50:48", "11/05/2018"));
             users = getUsers();
-            expect(users[p3.id].time.init).toBe(1526075448000);
+            expect(users[p3.id].time.init).toBe(1528746648000);
             // check P2 bill
             expect(users[p2.id].time.billable).toBe(2410166.666666667);
             // check P1 bill

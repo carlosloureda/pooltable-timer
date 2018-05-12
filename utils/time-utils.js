@@ -5,16 +5,26 @@ const now = () => {
     return new Date().getTime();
 }
 
-// Forces an hour to milliseconds as timestamp from today
-// DATE FOR TESTS
+/**
+ * This is for running the tests in remote servers and don't have problems with
+ * dates
+ */
+function convertToGMT0(date) {
+    // date = new Date(2015, 4, 11, 20, 0 ,0 ,0);
+    date = new Date(date.valueOf() + (-1*date.getTimezoneOffset()) * 60000);
+    return date;
+}
+
 const timeStringToMilliseconds = (timeString, dateString=null, delimitter=':') => {
-    const timeSplitted = timeString.split(delimitter);
-    let date = new Date();
+    var timeSplitted = timeString.split(delimitter);
+    var date = new Date();
     if (dateString) {
-        const dateSplitted = dateString.split('/');
-        date = new Date(parseInt(dateSplitted[2]), parseInt(dateSplitted[1]), parseInt(dateSplitted[0]))
+        var dateSplitted = dateString.split('/');
+        date = new Date(parseInt(dateSplitted[2]), parseInt(dateSplitted[1]-1), parseInt(dateSplitted[0]))
     }
-    return date.setHours(parseInt(timeSplitted[0]),parseInt(timeSplitted[1]), parseInt(timeSplitted[2]), 0);
+    date = new Date(date.setHours(parseInt(timeSplitted[0]),parseInt(timeSplitted[1]), parseInt(timeSplitted[2]), 0));
+    date = convertToGMT0(date)
+    return date.getTime();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -51,6 +61,7 @@ const roundNumber = (number, decimals) => {
     let sigma = 5/exp;
     return parseFloat(((number * exp + sigma)/exp).toFixed(decimals));
 }
+
 
 module.exports = {
     timeStringToMilliseconds,
