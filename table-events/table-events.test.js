@@ -1,6 +1,6 @@
 const {
     addUserToGame, removeUserFromGame,
-    getUsers, getUserByName, reset, initPauseUser
+    getUsers, getUserByName, reset, initPauseUser, endPauseUser
 } = require('./table-events');
 const tableEvents = require('./table-events');
 const timeUtils = require('../utils/time-utils');
@@ -276,22 +276,22 @@ describe('TableEvents', () => {
             let initPause = users[p2.id].time.pauses[users[p2.id].time.pauses.length - 1].init;
             expect(initPause).toBe(lastPauseTime);
             // Check P1 time.billable
-            expect(users[p1.id].time.billable).toBe(1650000);
+            expect(users[p1.id].time.billable).toBe(1794000);
                 // Check P2 time.billable
-            expect(users[p2.id].time.billable).toBe(1050000);
+            expect(users[p2.id].time.billable).toBe(1194000);
 
             // Exits P4
             let lastEndTime = timeUtils.timeStringToMilliseconds("21:46:23", testingDate);
             tableEvents.chargePlayer(p4.id, lastEndTime);
             users = getUsers();
                 // Check P4 time.end
-            expect(users[p4.id].time.init).toBe(lastEndTime);
+            expect(users[p4.id].time.end).toBe(lastEndTime);
                 // Check P1 time.billable
             expect(users[p1.id].time.billable).toBe(3419500);
                 // Check P2 time.billable
             expect(users[p2.id].time.billable).toBe(1194000);
                 // Check P4 time.billable
-            expect(users[p4.id].time.billable).toBe(144000);
+            expect(users[p4.id].time.billable).toBe(1769500);
 
             // Entries P3
             lastInitTime = timeUtils.timeStringToMilliseconds("21:50:48", testingDate);
@@ -313,13 +313,14 @@ describe('TableEvents', () => {
                 // Check P3 time.billable
             expect(users[p3.id].time.billable).toBe(59500);
 
-            // Exists P3
+            // Exits P3
             lastEndTime = timeUtils.timeStringToMilliseconds("21:56:23", testingDate);
             tableEvents.chargePlayer(p3.id, lastEndTime);
             users = getUsers();
                 // Check P3 time.end
-            expect(users[p3.id].time.init).toBe(lastEndTime);
+            expect(users[p3.id].time.end).toBe(lastEndTime);
                 // Check P1 time.billable
+                //TODO: CHECK THIS ONE!
             expect(users[p1.id].time.billable).toBe(3816000);
                 // Check P2 time.billable
             expect(users[p2.id].time.billable).toBe(1266000);

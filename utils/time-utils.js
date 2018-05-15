@@ -27,8 +27,6 @@ const timeStringToMilliseconds = (timeString, dateString=null, delimitter=':') =
     date = convertToGMT0(date)
     return date.getTime();
 }
-console.log(timeStringToMilliseconds("22:15:45", "11/05/2018"))
-////////////////////////////////////////////////////////////////////////////////
 
 /**
  * Parses a string in format HH`${delimiter}`mm`${delimiter}`ss to seconds
