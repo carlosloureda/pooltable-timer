@@ -2,18 +2,31 @@
   "name": "pooltable-timer",
   "version": "1.0.0",
   "description": "A simple project to bill properly to pool players in recreative pool tables billed by time",
-  "main": "index.js",
+  "private": true,
+  "devDependencies": {
+    "react-native-scripts": "1.14.0",
+    "jest-expo": "~27.0.0",
+    "react-test-renderer": "16.3.1",
+    "jest": "^22.4.3"
+  },
+  "main": "./node_modules/react-native-scripts/build/bin/crna-entry.js",
   "scripts": {
-    "test-expect": "mocha **/*.test.js",
+    "start": "react-native-scripts start",
+    "eject": "react-native-scripts eject",
+    "android": "react-native-scripts android",
+    "ios": "react-native-scripts ios",
     "test": "jest",
     "test-watch": "nodemon --exec \"npm test\""
   },
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "jest": "^22.4.3"
+  "jest": {
+    "preset": "jest-expo"
   },
+  "author": "Carlos Loureda <carloslouredaparrado@gmail.com>",
+  "license": "ISC",
   "dependencies": {
-    "lodash": "^4.17.10"
+    "lodash": "^4.17.10",
+    "expo": "^27.0.1",
+    "react": "16.3.1",
+    "react-native": "~0.55.2"
   }
 }
