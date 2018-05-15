@@ -1,12 +1,19 @@
 import React, { Component } from 'react';
 
 import {
-    View, Text, StyleSheet, Button
+    View, Text, StyleSheet, Button, TouchableOpacity, Easing
 } from 'react-native';
+import { FontAwesome } from '@expo/vector-icons';
+// import { AnimatedCircularProgress } from 'react-native-circular-progress';
+
+const timeUtils = require('../utils/time-utils');
 
 const TIMER_STARTED = 1;
 const TIMER_PAUSED = 2;
 const TIMER_STOPPED = 3;
+const PRICE_PER_HOUR = 4;
+const PRICER_PER_MS = (PRICE_PER_HOUR/(60*60*1000));
+const CURRENCY_SYMBOL ="€";
 
 class TimerView extends Component {
 
@@ -26,7 +33,9 @@ class TimerView extends Component {
             lastPause: null,
             count: 0,
             pauses: [],
-            countFormatted: '00:00:00',
+            countFormatted: {
+                hours: '00', minutes: '00', seconds: '00'
+            },
             status: TIMER_STOPPED,
         }
     }
@@ -41,7 +50,9 @@ class TimerView extends Component {
         seconds = (seconds < 10) ? '0' + seconds : seconds.toString();
         minutes = (minutes < 10) ? '0' + minutes : minutes.toString();
         hours = (hours < 10) ? '0' + hours : hours.toString();
-        return `${hours}:${minutes}:${seconds}`;
+        return  {
+            hours, minutes, seconds
+        }
     }
 
     getTimerInfo = () => {
@@ -61,7 +72,6 @@ class TimerView extends Component {
 
             // desde final ultima pausa hasta ahora
             let lastPause = this.state.timer.pauses[this.state.timer.pauses.length - 1];
-            console.log("lastPause: ", lastPause);
             if (lastPause && lastPause.end) {
                 totalCount += now - lastPause.end;
             }
@@ -72,18 +82,25 @@ class TimerView extends Component {
     }
 
     componentDidMount = () => {
-
+        // this.refs.circularProgress.performTimingAnimation(100, 8000, Easing.quad);
     }
     startTimer = () => {
-        console.log("Start timer");
+        // console.log("Start timer");
         if (! this.state.timer.start) {
             this.setState({
                 timer: {
                     ...this.state.timer,
-                    start: new Date().getTime()
+                    start: new Date().getTime(),
+                    status: TIMER_STARTED
                 }
             }, () => {});
         }
+        // this.setState({
+        //     timer: {
+        //         ...this.state.timer,
+        //         status: TIMER_STARTED
+        //     }
+        // }, () => {});
         this.nIntervId = setInterval(() => {
             const pausesObj = this.state.timer.pauses;
             const actualCount = this.getTimerInfo()
@@ -99,10 +116,10 @@ class TimerView extends Component {
                     pauses: this.state.timer.pauses
                 }
             });
-        }, 1);
+        }, 1000);
     }
     pauseTimer = () => {
-        console.log("Pause timer");
+        // console.log("Pause timer");
         clearInterval(this.nIntervId);
         let pausesArr = this.state.timer.pauses;
         pausesArr.push({
@@ -126,7 +143,7 @@ class TimerView extends Component {
     }
     resetTimer = () => {
         //TODO: add modal to ask if he/she is sure about this operation
-        console.log("Pause timer");
+        // console.log("Pause timer");
         clearInterval(this.nIntervId);
 
         this.setState({
@@ -137,37 +154,99 @@ class TimerView extends Component {
                 lastPause: null,
                 count: 0,
                 pauses: [],
-                countFormatted: '00:00:00',
+                countFormatted: {
+                    hours: '00', minutes: '00', seconds: '00'
+                },
                 status: TIMER_STOPPED,
             }
         })
     }
 
-    render() {
-        const { status } = this.state.timer;
-        console.log("STATUS: ", status);
-        return(
-            <View style={styles.container}>
-                <Text>Timer page</Text>
-                <Text>{this.state.timer.countFormatted}</Text>
+    getTotalPrice = () => {
+        return timeUtils.roundNumber(this.state.timer.count * PRICER_PER_MS, 2);
+    }
 
-                { status !== TIMER_STARTED &&
-                    <Button
-                        title="Play"
-                        // color={primaryButton}
-                        onPress={this.startTimer}
-                    />
-                }
-                { status === TIMER_STARTED &&
-                    <Button
-                        title="Pause"
-                        onPress={this.pauseTimer}
-                    />
-                }
-                <Button
-                    title="Reset"
-                    onPress={this.resetTimer}
-                />
+    render() {
+        const { status, countFormatted } = this.state.timer;
+        return(
+            // <Timer />
+            <View style={styles.container}>
+                <View style={styles.timerWrapper}>
+                    <View style={styles.timerButtons}>
+                        { status !== TIMER_STARTED &&
+
+                            <TouchableOpacity
+                                onPress={this.startTimer}
+                                style={styles.timerButtonsCircle}
+                            >
+                                <FontAwesome
+                                    name='play' size={30}
+                                    color={'#dadada'}
+                                />
+                            </TouchableOpacity>
+
+                        }
+                        { status === TIMER_STARTED &&
+
+                            <TouchableOpacity
+                                onPress={this.pauseTimer}
+                                style={styles.timerButtonsCircle}
+                            >
+                                <FontAwesome
+                                    name='pause' size={30}
+                                    color={'#dadada'}
+                                />
+                            </TouchableOpacity>
+
+                            // <AnimatedCircularProgress
+                            //     size={120}
+                            //     width={15}
+                            //     // fill={100}
+                            //     fill={this.state.fill}
+                            //     fill={100}
+                            //     tension={1}
+                            //     friction={1}
+                            //     speed={1}
+                            //     tintColor="#00e0ff"
+                            //     onAnimationComplete={() => console.log('onAnimationComplete')}
+                            //     backgroundColor="#3d5875"
+                            //     ref='circularProgress'
+                            // >
+                            // {
+                            // (fill) =>(
+                            //     <FontAwesome
+                            //         name='pause' size={30}
+                            //         color={'#dadada'}
+                            //         onPress={this.pauseTimer}
+                            //     />
+                            // )
+                            // }
+                            // </AnimatedCircularProgress>
+                        }
+                    </View>
+                    <View style={styles.timerInfo}>
+                        <View style={styles.timerUpperLine}>
+                            <FontAwesome
+                                style={styles.resetButton}
+                                name='undo' size={15}
+                                color={'#999'}
+                                onPress={this.resetTimer}
+                            />
+                            <Text style={styles.timerPrice}>
+                                {this.getTotalPrice() + ' ' + CURRENCY_SYMBOL}
+                            </Text>
+                        </View>
+                        <View style={styles.timerCount}>
+                            <Text style={styles.timerCountPrimary}>
+                                { countFormatted.hours }:{ countFormatted.minutes }
+                            </Text>
+                            <Text style={styles.timerCountSeconds}>
+                                { countFormatted.seconds }
+                            </Text>
+                        </View>
+                    </View>
+                </View>
+
                 {/* TODO: Add pay/stop timer events */}
                 {/* <Button
                     title="Pay"
@@ -185,6 +264,75 @@ const styles = StyleSheet.create({
       alignItems: 'center',
       justifyContent: 'center',
     },
+
+    timerWrapper: {
+        backgroundColor: '#333333',
+        // flex: 1,
+        flexDirection: 'row',
+        width: 250,
+        height:100,
+        alignItems: 'flex-start',
+        justifyContent: 'flex-start',
+    },
+    timerButtons: {
+        // backgroundColor: 'red',
+        height: 100,
+        flex: 1,
+        alignItems:'center',
+        justifyContent:'center',
+    },
+    timerButtonsCircle: {
+        borderWidth: 6,
+        // borderColor:'rgba(0,0,0,0.2)',
+        borderColor:'#4b4b4b',
+        alignItems:'center',
+        justifyContent:'center',
+        marginLeft: 5,
+        width:80,
+        height:80,
+        // backgroundColor:'#fff',
+        borderRadius:100,
+    },
+    timerInfo: {
+        height: 100,
+        flex: 2,
+        flexDirection: 'column',
+        justifyContent: 'space-around',
+        alignItems: 'center'
+    },
+    timerCount: {
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'center',
+    },
+    timerCountPrimary: {
+        fontSize: 30,
+        color: '#dadada'
+    },
+    timerCountSeconds: {
+        paddingLeft: 5,
+        fontSize: 15,
+        color: '#999'
+    },
+    resetButton: {
+        alignSelf: 'flex-end',
+        flexDirection: 'row',
+        flex: 1,
+        paddingTop: 5
+        // justifyContent: 'flex-end'
+    },
+    timerPrice: {
+        flex: 2,
+        fontSize: 20,
+        color: '#00e0ff'
+    },
+    timerUpperLine: {
+        flex: 1,
+        width: 150, //TODO: change one day
+        alignItems: 'center',
+        justifyContent: 'center'
+    }
+
 });
 
 export default TimerView
