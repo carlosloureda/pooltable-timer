@@ -5,6 +5,7 @@ const now = require('../utils/time-utils.js').now;
 /* Constants and getters */
 let usersPendingPayment = {};
 let users = {};
+const getUsers = () => users;
 let initGameTime = null; // when the table is opened
 const getInitGameTime = () => initGameTime;
 let endGameTime = null;  // when the table is closed
@@ -26,7 +27,6 @@ const getActivePlayersCount = () => {
     for (userId in usersPendingPayment) {
         nPendingPlayers += ! isUserPaused(userId) ? 1 : 0;
     }
-    console.log("Active players count: ", nPendingPlayers);
     return nPendingPlayers;
 }
 
@@ -43,14 +43,8 @@ const getLastEventTime = () => Math.max(entryTime, chargedTime, userPauseTime);
 const addTimeToActiveUsers = (nowTime) => {
         // calculate time from now to last event entry
     let lastTime = getLastEventTime();
-    console.log("**************************************************************");
-    console.warn("LAST TIME is: ", lastTime);
-    console.warn("nowTime is: ", nowTime);
     let activePlayersCount = getActivePlayersCount();
     let timeToBill = activePlayersCount ? (nowTime - lastTime) / activePlayersCount : 0;
-    console.warn("TIMETOBILL: ", timeToBill);
-    console.warn("activePlayersCount: ", activePlayersCount);
-    console.log("**************************************************************");
     for (userId in usersPendingPayment) {
         let user = usersPendingPayment[userId];
         if (! isUserPaused(user.id)) {
@@ -108,11 +102,25 @@ const chargePlayer = (id, endTime = null) => {
     delete usersPendingPayment[id];
 }
 
+/**
+ *  Removes/ Charges a player when exits the table
+ * TODO: If a player is charged (ends a game), we need to check if he/she
+ * is on a pause (NO TEST CASE FOR THIS YET BIG :TODO)
+ * @param {string} id Id of the playet to be charged
+ * @param {number} endTime Time in miliseconds. It is passed as an argument
+ */
 const removeUserFromGame = (id, endTime = null) => {
     chargePlayer(id, endTime);
     return true;
 }
 
+/**
+ * Puts a player into a pause. This way he/she won't be billed while remains
+ * on a pause
+ * @param { string } id - Id of the user to be charged
+ * @param { number } pauseTime - The number of miliseconds where the pause
+ *                               begins. Used for tests
+ */
 const initPauseUser = (id, pauseTime = null) => {
     let nowTime = pauseTime ? pauseTime : now();
     //TODO: check if it has a ongoing pause
@@ -127,6 +135,13 @@ const initPauseUser = (id, pauseTime = null) => {
     return users[id];
 }
 
+/**
+ * Removes a player from a pause. This player will begin to be chargable
+ *
+ * @param { string } id - Id of the user to be charged
+ * @param { number } pauseTime - The number of miliseconds where the pause
+ *                               ends. Used for tests
+ */
 const endPauseUser = (id, pauseTime = null) => {
     let nowTime = pauseTime ? pauseTime : now();
 
@@ -137,6 +152,14 @@ const endPauseUser = (id, pauseTime = null) => {
     return users[id];
 }
 
+/* *****************************************************************************
+                            H E L P E R S
+***************************************************************************** */
+
+/**
+ * Checks if an user is on a pause
+ * @param { string } id - Id of the user to be checked.
+ */
 const isUserPaused = (id) => {
     let pausesArrLength = users[id].time.pauses.length;
     if (pausesArrLength) {
@@ -145,20 +168,25 @@ const isUserPaused = (id) => {
     return false;
 }
 
+/**
+ * Custom number rounder
+ * @param {*} number
+ * @param {*} decimals
+ */
 const roundNumber = (number, decimals) => {
     let exp = Math.pow(10 ,decimals);
     let sigma = 5/exp;
     return ((number * exp + sigma)/exp).toFixed(decimals);
 }
 
-getLastUserBilledTime = () => {
-    return lastChargedId ? users[lastChargedId].time.billable : null;
-}
-const getUsers = () => {
-    return users;
+const getUserByName = (name) => {
+    let user = users.filter((_user) => _user.name === name)
+    return user ? user[0] : null;
 }
 
-// For tests
+/**
+ * Resets variables for tests.
+ */
 const reset = () => {
     users = {};
     usersPendingPayment = {};
@@ -168,13 +196,6 @@ const reset = () => {
     entryTime = null;
     lastChargedId = null;
 };
-
-const getUserByName = (name) => {
-    let user = users.filter((_user) => _user.name === name)
-    return user ? user[0] : null;
-}
- // round to integer
-const roundInteger = (num) => parseInt(num.toFixed(0));
 
 // TODO: Add flag for exporting more or less thing if we are in dev mode
 module.exports = {
