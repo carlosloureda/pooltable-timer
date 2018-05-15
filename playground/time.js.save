@@ -1,0 +1,34 @@
+
+Date.UTC(year, month, day, hours, minutes, seconds, millisec)
+
+function convertLocalDatetoUTCDate(date) {
+    return new Date(
+        date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(),
+        date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds()
+    );
+}
+
+function timeStringToMilliseconds(timeString, dateString) {
+    var delimitter = ':';
+    var timeSplitted = timeString.split(delimitter);
+    var date = new Date();
+    if (dateString) {
+        var dateSplitted = dateString.split('/');
+        date = new Date(parseInt(dateSplitted[2]), parseInt(dateSplitted[0]), parseInt(dateSplitted[1]-1))
+    }
+    date = new Date(date.setHours(parseInt(timeSplitted[0]),parseInt(timeSplitted[1]), parseInt(timeSplitted[2]), 0));
+    console.log("Date in local: ", date);
+    date = convertLocalDatetoUTCDate(date)
+    console.log("Date in UTC: ", date);
+
+    return date.getTime();
+}
+
+var res = timeStringToMilliseconds("20:00:00", "05/11/2018");
+console.log(res);
+
+var offset = new Date().getTimezoneOffset();
+console.log("Offset: ", offset);
+
+
+

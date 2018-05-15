@@ -15,6 +15,7 @@ function convertToGMT0(date) {
     return date;
 }
 
+// IN GMT 0 format for testing purposes :D
 const timeStringToMilliseconds = (timeString, dateString=null, delimitter=':') => {
     var timeSplitted = timeString.split(delimitter);
     var date = new Date();
@@ -26,7 +27,7 @@ const timeStringToMilliseconds = (timeString, dateString=null, delimitter=':') =
     date = convertToGMT0(date)
     return date.getTime();
 }
-
+console.log(timeStringToMilliseconds("22:15:45", "11/05/2018"))
 ////////////////////////////////////////////////////////////////////////////////
 
 /**

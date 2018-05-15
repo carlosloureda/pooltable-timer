@@ -14,6 +14,7 @@ let entryTime = null;  // when last player entered the game
 const getEntryTime = () => entryTime;
 let lastChargedId = null; // to check for last player chargedId
 const getLastChargedId = () => lastChargedId;
+let userPauseTime = null; // last pause init/end for user
 
 const addUserToGame = (name, initTime=null) => {
 
@@ -27,11 +28,12 @@ const addUserToGame = (name, initTime=null) => {
         time: {
             init: nowTime,
             end: null,
+            pauses:[],
             billable: 0,
             elapsed: 0,
         }
     }
-    let usersPlayingLength = Object.keys(usersPendingPayment).length;
+    let usersPlayingLength = getActivePlayers();
     if(usersPlayingLength > 0){
         let lastTime = (chargedTime > entryTime) ? chargedTime : entryTime;
         let timeToBill = (user.time.init - lastTime) / usersPlayingLength;
@@ -51,6 +53,8 @@ const removeUserFromGame = (id, endTime = null) => {
     return true;
 }
 
+// TODO: If a player is charged (ends a game), we need to check if he/she
+// is on a pause (NO TEST CASE FOR THIS YET BIG :TODO)
 const chargePlayer = (id, endTime = null) => {
     let nowTime = endTime ? endTime : now();
     let usersLength = Object.keys(users).length;
@@ -61,8 +65,8 @@ const chargePlayer = (id, endTime = null) => {
 
     let lastUserBilledTime = getLastUserBilledTime();
     users[id].time.end = nowTime; // after fetching the data
-    //TODO: will need refactor when pause
-    let usersPlayingLength = Object.keys(usersPendingPayment).length;
+    let usersPlayingLength = getActivePlayers();
+    // If last event was a charge
     if (lastUserBilledTime) {
         let timeToBill = 0;
         if(chargedTime > users[id].time.init) {
@@ -72,7 +76,11 @@ const chargePlayer = (id, endTime = null) => {
         }
         users[id].time.billable += timeToBill;
         addTimeToRemainingUsers(timeToBill, id);
-    } else {
+    }
+    //  if last event was a user entry
+    else {
+        // getLastEventTime
+        // TODO: maybe this prons into an error? It supposes it is the user exit last time he entered
         timeToBill = (users[id].time.end - users[id].time.init) / usersPlayingLength;
         users[id].time.billable += timeToBill;
         addTimeToRemainingUsers(timeToBill, id);
@@ -82,10 +90,52 @@ const chargePlayer = (id, endTime = null) => {
     delete usersPendingPayment[id];
 }
 
+const getActivePlayers = () => {
+    let nPendingPlayers = 0;
+    for (userId in usersPendingPayment) {
+        nPendingPlayers += ! isUserPaused(userId) ? 1 : 0;
+    }
+    return nPendingPlayers;
+}
+
+const initPauseUser = (id, pauseTime = null) => {
+    let nowTime = pauseTime ? pauseTime : now();
+    //TODO: check if it has a ongoing pause
+    users[id].time.pauses.push({
+        init: nowTime,
+        end: null
+    })
+    //TODO: Add accumulate
+    // userPauseTime = nowTime;
+
+    return users[id];
+}
+
+// seek for the latest event time, a user entry, a user exit or a pause
+const getLastEventTime = () => Math.max(entryTime, chargedTime, userPauseTime);
+
+const endPauseUser = (id, pauseTime = null) => {
+    let nowTime = pauseTime ? pauseTime : now();
+    //TODO: check things
+    users[id].time.pauses[users[id].time.pauses.length -1].end = nowTime;
+
+    // userPauseTime = nowTime;
+    //TODO: Add accumulate
+
+    return users[id];
+}
+
+const isUserPaused = (id) => {
+    let pausesArrLength = users[id].time.pauses.length;
+    if (pausesArrLength) {
+        return users[id].time.pauses[pausesArrLength - 1].end ? false : true
+    }
+    return false;
+}
 const addTimeToRemainingUsers = (billableTime, chargedUserId) => {
     for (userId in usersPendingPayment) {
         let user = usersPendingPayment[userId];
-        if (user.id !== chargedUserId) {
+        if (user.id !== chargedUserId && ! isUserPaused(user.id)) {
             let lastUserBilledTime = getLastUserBilledTime();
             if (user.time.init > lastUserBilledTime) {
                 user.time.billable += billableTime;
@@ -134,6 +184,8 @@ module.exports = {
     getUsers,
     reset,
     chargePlayer,
+    initPauseUser,
+    endPauseUser,
     usersPendingPayment,
     getInitGameTime,
     getEndGameTime,

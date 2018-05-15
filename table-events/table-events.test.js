@@ -1,6 +1,6 @@
 const {
     addUserToGame, removeUserFromGame,
-    getUsers, getUserByName, reset
+    getUsers, getUserByName, reset, initPauseUser
 } = require('./table-events');
 const tableEvents = require('./table-events');
 const timeUtils = require('../utils/time-utils');
@@ -234,4 +234,166 @@ describe('TableEvents', () => {
 
     });
 
+
+    describe('Testing a complete game ~EXAMPLE3', () => {
+
+        it('should add and end players 3, 4, 2, 1 in different times , and P2 will pause 2 times. Charge them accordingly', () => {
+            const testingDate = "11/05/2018"; // spanish format
+            // timeStringToMilliseconds must be a very well tested function
+            reset();
+
+            // Entries P1
+            let lastInitTime = timeUtils.timeStringToMilliseconds("20:00:00", testingDate);
+            let p1 = addUserToGame('P1', lastInitTime);
+            let users = getUsers();
+            expect(users[p1.id].time.init).toBe(lastInitTime);
+
+            // Entries P2.
+            lastInitTime = timeUtils.timeStringToMilliseconds("20:10:00", testingDate);
+            let p2 = addUserToGame('P2', lastInitTime);
+            users = getUsers();
+                // Check P2 time init
+            expect(users[p2.id].time.init).toBe(lastInitTime);
+            // Check P1 time.billable
+            expect(users[p1.id].time.billable).toBe(600000);
+
+            // Entries P4
+            lastInitTime = timeUtils.timeStringToMilliseconds("20:45:00", testingDate);
+            let p4 = addUserToGame('P4', lastInitTime);
+            users = getUsers();
+                // Check P4 time.init
+            expect(users[p4.id].time.init).toBe(lastInitTime);
+                // Check P1 time.billable
+            expect(users[p1.id].time.billable).toBe(1650000);
+                // Check P2 time.billable
+            expect(users[p2.id].time.billable).toBe(1050000);
+
+            // Init pause P2
+            let lastPauseTime = timeUtils.timeStringToMilliseconds("20:52:12", testingDate);
+            initPauseUser(p2.id, lastPauseTime);
+            users = getUsers();
+            // Check P2 time.pause ...
+            let initPause = users[p2.id].time.pauses[users[p2.id].time.pauses.length - 1].init;
+            expect(initPause).toBe(lastPauseTime);
+            // Check P1 time.billable
+            expect(users[p1.id].time.billable).toBe(1650000);
+                // Check P2 time.billable
+            expect(users[p2.id].time.billable).toBe(1050000);
+
+            // Exits P4
+            let lastEndTime = timeUtils.timeStringToMilliseconds("21:46:23", testingDate);
+            tableEvents.chargePlayer(p4.id, lastEndTime);
+            users = getUsers();
+                // Check P4 time.end
+            expect(users[p4.id].time.init).toBe(lastEndTime);
+                // Check P1 time.billable
+            expect(users[p1.id].time.billable).toBe(3419500);
+                // Check P2 time.billable
+            expect(users[p2.id].time.billable).toBe(1194000);
+                // Check P4 time.billable
+            expect(users[p4.id].time.billable).toBe(144000);
+
+            // Entries P3
+            lastInitTime = timeUtils.timeStringToMilliseconds("21:50:48", testingDate);
+            p3 = addUserToGame('P3', lastInitTime);
+            users = getUsers();
+                // Check P3 time.init
+            expect(users[p3.id].time.init).toBe(lastInitTime);
+                // Check P1 time.billable
+            expect(users[p1.id].time.billable).toBe(3684500);
+
+            // End pause P2
+            lastPauseTime = timeUtils.timeStringToMilliseconds("21:52:47", testingDate);
+            p2 = endPauseUser(p2.id, lastPauseTime);
+                // Check P2 time.pause
+            let endPause = users[p2.id].time.pauses[users[p2.id].time.pauses.length - 1].end;
+            expect(endPause).toBe(lastPauseTime);
+                // Check P1 time.billable
+            expect(users[p1.id].time.billable).toBe(3744000);
+                // Check P3 time.billable
+            expect(users[p3.id].time.billable).toBe(59500);
+
+            // Exists P3
+            lastEndTime = timeUtils.timeStringToMilliseconds("21:56:23", testingDate);
+            tableEvents.chargePlayer(p3.id, lastEndTime);
+            users = getUsers();
+                // Check P3 time.end
+            expect(users[p3.id].time.init).toBe(lastEndTime);
+                // Check P1 time.billable
+            expect(users[p1.id].time.billable).toBe(3816000);
+                // Check P2 time.billable
+            expect(users[p2.id].time.billable).toBe(1266000);
+                // Check P3 time.billable
+            expect(users[p3.id].time.billable).toBe(131500);
+
+            // Init pause P2
+            lastPauseTime = timeUtils.timeStringToMilliseconds("21:57:39", testingDate);
+            p2 = initPauseUser(p2.id, lastPauseTime);
+                // Check P2 time.pause ...
+            initPause = p2.time.pauses[p2.time.pauses.length - 1].init;
+            expect(initPause).toBe(lastPauseTime);
+                // Check P1 time.billable
+            expect(users[p1.id].time.billable).toBe(3854000);
+                // Check P2 time.billable
+            expect(users[p2.id].time.billable).toBe(1304000);
+
+            // End pause P2
+            lastPauseTime = timeUtils.timeStringToMilliseconds("22:00:02", testingDate);
+            p2 = endPauseUser(p2.id, lastPauseTime);
+            endPause = p2.time.pauses[p2.time.pauses.length - 1].end;
+                // Check P2 time.pause
+            expect(endPause).toBe(lastPauseTime);
+                // Check P1 time.billable
+            expect(users[p1.id].time.billable).toBe(3997000);
+
+            // Exits P2
+            lastEndTime = timeUtils.timeStringToMilliseconds("22:02:25", testingDate);
+            tableEvents.chargePlayer(p2.id, lastEndTime);
+            users = getUsers();
+                // Check P2 time.end
+            expect(users[p2.id].time.end).toBe(lastEndTime);
+                // Check P1 time.billable
+            expect(users[p1.id].time.billable).toBe(4068500);
+                // Check P2 time.billable
+            expect(users[p2.id].time.billable).toBe(1375500);
+
+            // Exits P1
+            lastEndTime = timeUtils.timeStringToMilliseconds("22:15:45", testingDate);
+            tableEvents.chargePlayer(p1.id, lastEndTime);
+            users = getUsers();
+                // Check P1 time.end
+            expect(users[p1.id].time.end).toBe(lastEndTime);
+                // Check P1 time.billable
+            expect(users[p1.id].time.billable).toBe(4868500);
+
+            /* Check the results */
+            const sigma = 4/(60*60*1000);
+
+            let time3 = users[p3.id].time.billable;
+            expect(time3).toBe(131500);
+            let payment3 = timeUtils.roundNumber(time3*sigma, 2);
+            // expect(payment3).toBe(0.19);
+
+            let time4 = users[p4.id].time.billable;
+            expect(time4).toBe(1769500);
+            let payment4 = timeUtils.roundNumber(time4*sigma, 2);
+            // expect(payment4).toBe(1.36);
+
+            let time2 = users[p2.id].time.billable;
+            expect(time2).toBe(1375500);
+            let payment2 = timeUtils.roundNumber(time2*sigma, 2);
+            // expect(payment2).toBe(2.97);
+
+            let time1 = users[p1.id].time.billable;
+            expect(time1).toBe(4868500);
+            let payment1 = timeUtils.roundNumber(time1*sigma, 2);
+            // expect(payment1).toBe(4.53);
+
+            let totalBilledTime = time1 + time2 +  time3 + time4;
+            // expect(totalBilledTime).toBe(8145000.000000001);
+            expect(totalBilledTime).toBe(8145000);
+            let payment = timeUtils.roundNumber(totalBilledTime*sigma, 2);
+            // expect(payment).toBe(9.05);
+        });
+    });
 });
