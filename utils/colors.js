@@ -1,0 +1,5 @@
+export const danger = '#b73312'
+export const blue = '#1241b7'
+export const lightGrey = '#dadada'
+export const gold = '#ffd700'
+export const lightBlue = '#00e0ff'

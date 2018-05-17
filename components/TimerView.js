@@ -4,6 +4,7 @@ import {
     View, Text, StyleSheet, Button, TouchableOpacity, Easing
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
+
 // import { AnimatedCircularProgress } from 'react-native-circular-progress';
 
 const timeUtils = require('../utils/time-utils');
@@ -169,107 +170,66 @@ class TimerView extends Component {
     render() {
         const { status, countFormatted } = this.state.timer;
         return(
-            // <Timer />
-            <View style={styles.container}>
-                <View style={styles.timerWrapper}>
-                    <View style={styles.timerButtons}>
-                        { status !== TIMER_STARTED &&
+            <View style={styles.timerWrapper}>
+                <View style={styles.timerButtons}>
+                    { status !== TIMER_STARTED &&
 
-                            <TouchableOpacity
-                                onPress={this.startTimer}
-                                style={styles.timerButtonsCircle}
-                            >
-                                <FontAwesome
-                                    name='play' size={30}
-                                    color={'#dadada'}
-                                />
-                            </TouchableOpacity>
-
-                        }
-                        { status === TIMER_STARTED &&
-
-                            <TouchableOpacity
-                                onPress={this.pauseTimer}
-                                style={styles.timerButtonsCircle}
-                            >
-                                <FontAwesome
-                                    name='pause' size={30}
-                                    color={'#dadada'}
-                                />
-                            </TouchableOpacity>
-
-                            // <AnimatedCircularProgress
-                            //     size={120}
-                            //     width={15}
-                            //     // fill={100}
-                            //     fill={this.state.fill}
-                            //     fill={100}
-                            //     tension={1}
-                            //     friction={1}
-                            //     speed={1}
-                            //     tintColor="#00e0ff"
-                            //     onAnimationComplete={() => console.log('onAnimationComplete')}
-                            //     backgroundColor="#3d5875"
-                            //     ref='circularProgress'
-                            // >
-                            // {
-                            // (fill) =>(
-                            //     <FontAwesome
-                            //         name='pause' size={30}
-                            //         color={'#dadada'}
-                            //         onPress={this.pauseTimer}
-                            //     />
-                            // )
-                            // }
-                            // </AnimatedCircularProgress>
-                        }
-                    </View>
-                    <View style={styles.timerInfo}>
-                        <View style={styles.timerUpperLine}>
+                        <TouchableOpacity
+                            onPress={this.startTimer}
+                            style={styles.timerButtonsCircle}
+                        >
                             <FontAwesome
-                                style={styles.resetButton}
-                                name='undo' size={15}
-                                color={'#999'}
-                                onPress={this.resetTimer}
+                                name='play' size={30}
+                                color={'#dadada'}
                             />
-                            <Text style={styles.timerPrice}>
-                                {this.getTotalPrice() + ' ' + CURRENCY_SYMBOL}
-                            </Text>
-                        </View>
-                        <View style={styles.timerCount}>
-                            <Text style={styles.timerCountPrimary}>
-                                { countFormatted.hours }:{ countFormatted.minutes }
-                            </Text>
-                            <Text style={styles.timerCountSeconds}>
-                                { countFormatted.seconds }
-                            </Text>
-                        </View>
+                        </TouchableOpacity>
+
+                    }
+                    { status === TIMER_STARTED &&
+
+                        <TouchableOpacity
+                            onPress={this.pauseTimer}
+                            style={styles.timerButtonsCircle}
+                        >
+                            <FontAwesome
+                                name='pause' size={30}
+                                color={'#dadada'}
+                            />
+                        </TouchableOpacity>
+                    }
+                </View>
+                <View style={styles.timerInfo}>
+                    <View style={styles.timerUpperLine}>
+                        <FontAwesome
+                            style={styles.resetButton}
+                            name='undo' size={15}
+                            color={'#999'}
+                            onPress={this.resetTimer}
+                        />
+                        <Text style={styles.timerPrice}>
+                            {this.getTotalPrice() + ' ' + CURRENCY_SYMBOL}
+                        </Text>
+                    </View>
+                    <View style={styles.timerCount}>
+                        <Text style={styles.timerCountPrimary}>
+                            { countFormatted.hours }:{ countFormatted.minutes }
+                        </Text>
+                        <Text style={styles.timerCountSeconds}>
+                            { countFormatted.seconds }
+                        </Text>
                     </View>
                 </View>
-
-                {/* TODO: Add pay/stop timer events */}
-                {/* <Button
-                    title="Pay"
-                    onPress={this.stopTimer}
-                /> */}
             </View>
         )
     }
 }
 
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: '#fff',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-
     timerWrapper: {
         backgroundColor: '#333333',
         // flex: 1,
         flexDirection: 'row',
-        width: 250,
+        width: 300,
         height:100,
         alignItems: 'flex-start',
         justifyContent: 'flex-start',
@@ -317,8 +277,8 @@ const styles = StyleSheet.create({
     resetButton: {
         alignSelf: 'flex-end',
         flexDirection: 'row',
-        flex: 1,
-        paddingTop: 5
+        // flex: 1,
+        paddingTop: 5,
         // justifyContent: 'flex-end'
     },
     timerPrice: {

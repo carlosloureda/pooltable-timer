@@ -1,0 +1,4 @@
+> Añadir jugadores
+> Empezar
+> Parar mesa o para jugadores
+(cerrar aplicación)
