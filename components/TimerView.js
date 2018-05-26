@@ -5,6 +5,9 @@ import {
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 
+import { connect } from 'react-redux'
+import { startTimer, pauseTimer, updateTimer, resetTimer } from '../actions/index';
+
 // import { AnimatedCircularProgress } from 'react-native-circular-progress';
 
 const timeUtils = require('../utils/time-utils');
@@ -20,162 +23,56 @@ class TimerView extends Component {
 
     constructor(props) {
         super(props)
-        this.getTimerInfo = this.getTimerInfo.bind(this);
-        this.startTimer = this.startTimer.bind(this);
-        this.pauseTimer = this.pauseTimer.bind(this);
+        this.onStartTimer = this.onStartTimer.bind(this);
+        this.onPauseTimer = this.onPauseTimer.bind(this);
     }
     nIntervId = null;
 
-    state = {
-        timer: {
-            start: null,
-            end: null,
-            lastPauseCount: null,
-            lastPause: null,
-            count: 0,
-            pauses: [],
-            countFormatted: {
-                hours: '00', minutes: '00', seconds: '00'
-            },
-            status: TIMER_STOPPED,
-        }
-    }
-    // getTime = () => new Date().toLocaleTimeString()
-    parseTime(count) {
-        let miliseconds = count % 1000;
-        let seconds = Math.floor(count  / 1000) % 60;
-        let minutes = Math.floor(count  / (1000 * 60)) % 60;
-        let hours = Math.floor(count  / (1000 * 60 * 60)) % 60;
-
-        miliseconds = (miliseconds < 10) ? '0' + miliseconds : miliseconds.toString();
-        seconds = (seconds < 10) ? '0' + seconds : seconds.toString();
-        minutes = (minutes < 10) ? '0' + minutes : minutes.toString();
-        hours = (hours < 10) ? '0' + hours : hours.toString();
-        return  {
-            hours, minutes, seconds
-        }
-    }
-
-    getTimerInfo = () => {
-        var now = new Date().getTime();
-        let totalCount = 0;
-        if (this.state.timer.pauses && this.state.timer.pauses.length) {
-
-            // desde start hasta primera pausa
-            totalCount = this.state.timer.pauses[0].init - this.state.timer.start;
-
-            // desde pausa ultima a start siguiente
-            for (let i = 0; i < this.state.timer.pauses.length; i++) {
-                if (i != this.state.timer.pauses.length - 1) { // no estamos en la ultima
-                    totalCount += this.state.timer.pauses[i + 1].init - this.state.timer.pauses[i].end;
-                }
-            }
-
-            // desde final ultima pausa hasta ahora
-            let lastPause = this.state.timer.pauses[this.state.timer.pauses.length - 1];
-            if (lastPause && lastPause.end) {
-                totalCount += now - lastPause.end;
-            }
-        } else { // no pauses
-            totalCount = now - this.state.timer.start;
-        }
-        return totalCount;
-    }
-
     componentDidMount = () => {
         // this.refs.circularProgress.performTimingAnimation(100, 8000, Easing.quad);
+        this.props.resetTimer();
     }
-    startTimer = () => {
+
+    onStartTimer = () => {
         // console.log("Start timer");
-        if (! this.state.timer.start) {
-            this.setState({
-                timer: {
-                    ...this.state.timer,
-                    start: new Date().getTime(),
-                    status: TIMER_STARTED
-                }
-            }, () => {});
+        if (! this.props.timer.start) {
+            this.props.startTimer();
         }
-        // this.setState({
-        //     timer: {
-        //         ...this.state.timer,
-        //         status: TIMER_STARTED
-        //     }
-        // }, () => {});
         this.nIntervId = setInterval(() => {
-            const pausesObj = this.state.timer.pauses;
-            const actualCount = this.getTimerInfo()
-            if (this.state.timer.status === TIMER_PAUSED) {
-                pausesObj[pausesObj.length -1].end = new Date().getTime();
-            }
-            this.setState({
-                timer: {
-                    ...this.state.timer,
-                    count: actualCount,
-                    status: TIMER_STARTED,
-                    countFormatted: this.parseTime(actualCount),
-                    pauses: this.state.timer.pauses
-                }
-            });
+            this.props.updateTimer();
         }, 1000);
     }
-    pauseTimer = () => {
+    onPauseTimer = () => {
         // console.log("Pause timer");
         clearInterval(this.nIntervId);
-        let pausesArr = this.state.timer.pauses;
-        pausesArr.push({
-            init: new Date().getTime(),
-            end: null
-        });
-        this.setState({
-            timer: {
-                ...this.state.timer,
-                status: TIMER_PAUSED,
-                pauses: pausesArr
-            }
-        }, () => {
-            // save the pause 'time'
-
-        })
-
+        this.props.pauseTimer();
     }
+
     stopTimer = () => {
 
     }
+
     resetTimer = () => {
         //TODO: add modal to ask if he/she is sure about this operation
         // console.log("Pause timer");
         clearInterval(this.nIntervId);
-
-        this.setState({
-            timer: {
-                start: null,
-                end: null,
-                lastPauseCount: null,
-                lastPause: null,
-                count: 0,
-                pauses: [],
-                countFormatted: {
-                    hours: '00', minutes: '00', seconds: '00'
-                },
-                status: TIMER_STOPPED,
-            }
-        })
+        this.props.resetTimer();
     }
 
     getTotalPrice = () => {
-        return timeUtils.roundNumber(this.state.timer.count * PRICER_PER_MS, 2);
+        return timeUtils.roundNumber(this.props.timer.count * PRICER_PER_MS, 2);
     }
 
     render() {
-        const { status, countFormatted } = this.state.timer;
+        const { status, countFormatted } = this.props.timer;
+        console.log("this.props.timer: ", this.props.timer);
         return(
             <View style={styles.timerWrapper}>
                 <View style={styles.timerButtons}>
                     { status !== TIMER_STARTED &&
 
                         <TouchableOpacity
-                            onPress={this.startTimer}
+                            onPress={this.onStartTimer}
                             style={styles.timerButtonsCircle}
                         >
                             <FontAwesome
@@ -188,7 +85,7 @@ class TimerView extends Component {
                     { status === TIMER_STARTED &&
 
                         <TouchableOpacity
-                            onPress={this.pauseTimer}
+                            onPress={this.onPauseTimer}
                             style={styles.timerButtonsCircle}
                         >
                             <FontAwesome
@@ -295,4 +192,20 @@ const styles = StyleSheet.create({
 
 });
 
-export default TimerView
+
+function mapStateToProps(state) {
+    return {
+        timer: state.timer,
+    };
+}
+
+function mapDispatchToProps (dispatch) {
+    return {
+        startTimer: () => dispatch(startTimer()),
+        pauseTimer: () => dispatch(pauseTimer()),
+        updateTimer: () => dispatch(updateTimer()),
+        resetTimer: () => dispatch(resetTimer()),
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(TimerView)

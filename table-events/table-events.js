@@ -2,21 +2,34 @@ const _ = require('lodash');
 
 const now = require('../utils/time-utils.js').now;
 
-/* Constants and getters */
+/* *****************************************************************************
+                            GLOBAL VARIABLES
+  *****************************************************************************/
+
 let usersPendingPayment = {};
 let users = {};
-const getUsers = () => users;
 let initGameTime = null; // when the table is opened
-const getInitGameTime = () => initGameTime;
 let endGameTime = null;  // when the table is closed
-const getEndGameTime = () => endGameTime;
 let chargedTime = null;  // when last player was charged
-const getChargedTime = () => chargedTime;
 let entryTime = null;  // when last player entered the game
-const getEntryTime = () => entryTime;
 let lastChargedId = null; // to check for last player chargedId
-const getLastChargedId = () => lastChargedId;
 let userPauseTime = null; // last pause init/end for user
+
+/* *****************************************************************************
+                            SETTERS & GETTERS
+  *****************************************************************************/
+
+const getUsers = () => users;
+const getInitGameTime = () => initGameTime;
+const getEndGameTime = () => endGameTime;
+const getChargedTime = () => chargedTime;
+const getEntryTime = () => entryTime;
+const getLastChargedId = () => lastChargedId;
+
+
+/* *****************************************************************************
+                                METHODS
+  *****************************************************************************/
 
 /**
  * Gets the number of active players in the table.
