@@ -4,11 +4,12 @@ import {
 } from 'react-native';
 
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-
 import { danger, blue, lightGrey, gold, lightBlue } from '../utils/colors';
 import { connect } from 'react-redux'
-
 import { resetState } from '../actions/index'
+
+const utils = require('../utils/utils');
+
 class PlayerList extends Component {
 
     constructor(props) {
@@ -20,7 +21,6 @@ class PlayerList extends Component {
         const { players } = this.props;
         return (
             <View>
-                <Text>{players.length}</Text>
                 <FlatList
                     data={ players }
                     keyExtractor={(player) => player.id}
@@ -31,12 +31,12 @@ class PlayerList extends Component {
                             <View style={styles.playerColumn1}>
                                 <Text style={styles.playerName}>{item.name}</Text>
                                 <View style={styles.playerButtons}>
-                                    { item.status !== 'started'  &&
+                                    { item.status !== utils.PLAYER_STARTED &&
                                         <TouchableOpacity>
                                             <FontAwesome name='play' size={25} color={ blue } />
                                         </TouchableOpacity>
                                     }
-                                    { item.status === 'started'  &&
+                                    { item.status === utils.PLAYER_STARTED &&
                                         <TouchableOpacity>
                                             <FontAwesome name='pause' size={25} color={ lightGrey } />
                                         </TouchableOpacity>

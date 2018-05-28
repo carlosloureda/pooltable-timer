@@ -4,15 +4,8 @@ import {
 } from '../actions/types';
 
 import {getStoredState} from 'redux-persist';
-import  Utils from '../utils/utils';
+const Utils = require ('../utils/utils');
 // use combien reducers
-
-const TIMER_STARTED = 1;
-const TIMER_PAUSED = 2;
-const TIMER_STOPPED = 3;
-const PLAYER_STARTED = 1;
-const PLAYER_PAUSED = 2;
-const PLAYER_STOPPED = 3;
 
 const defaultState = {
     timer: {
@@ -25,7 +18,7 @@ const defaultState = {
         countFormatted: {
             hours: '00', minutes: '00', seconds: '00'
         },
-        status: TIMER_STOPPED,
+        status: Utils.TIMER_STOPPED,
     },
     // players: [1,2,3],
     players: [
@@ -82,7 +75,7 @@ function poolTable(state = defaultState, action) {
                 ...state,
                 timer: {
                     ...state.timer,
-                    status: TIMER_STARTED,
+                    status: Utils.Utils.TIMER_STARTED,
                     start: action.time
                 }
             }
@@ -96,7 +89,7 @@ function poolTable(state = defaultState, action) {
                 ...state,
                 timer: {
                     ...state.timer,
-                    status: TIMER_PAUSED,
+                    status: Utils.TIMER_PAUSED,
                     pauses: pausesArr
                 }
             }
@@ -104,7 +97,7 @@ function poolTable(state = defaultState, action) {
             const pausesObj = state.timer.pauses;
             const actualCount = getTimerInfo(state);
             //TODO:  maybe the end of the pause should go in the start??
-            if (state.timer.status === TIMER_PAUSED) {
+            if (state.timer.status === Utils.TIMER_PAUSED) {
                 pausesObj[pausesObj.length -1].end = new Date().getTime();
             }
 
@@ -113,7 +106,7 @@ function poolTable(state = defaultState, action) {
                 timer: {
                     ...state.timer,
                     count: actualCount,
-                    status: TIMER_STARTED,
+                    status: Utils.TIMER_STARTED,
                     countFormatted: parseTime(actualCount),
                     pauses: state.timer.pauses
                 }
@@ -131,7 +124,7 @@ function poolTable(state = defaultState, action) {
                     countFormatted: {
                         hours: '00', minutes: '00', seconds: '00'
                     },
-                    status: TIMER_STOPPED,
+                    status: Utils.TIMER_STOPPED,
                 },
                 players:[],
             }
@@ -145,7 +138,7 @@ function poolTable(state = defaultState, action) {
                         name: action.playerName,
                         time: action.initTime,
                         money: 0,
-                        status: PLAYER_STARTED,
+                        status: Utils.PLAYER_STARTED,
                         id: Utils.uid()
                     }
                 ])
