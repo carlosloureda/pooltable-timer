@@ -1,10 +1,11 @@
 import {
     START_TIMER, PAUSE_TIMER,
-    UPDATE_TIMER, RESET_TIMER, ADD_PLAYER
+    UPDATE_TIMER, RESET_TIMER, ADD_PLAYER,
+    PLAYER_START_TIMER, PLAYER_PAUSE_TIMER, PLAYER_STOP_TIMER
 } from '../actions/types';
 
 import {getStoredState} from 'redux-persist';
-const Utils = require ('../utils/utils');
+import { Utils } from '../utils/utils';
 // use combien reducers
 
 const defaultState = {
@@ -20,10 +21,24 @@ const defaultState = {
         },
         status: Utils.TIMER_STOPPED,
     },
-    // players: [1,2,3],
-    players: [
-        { name: 'Angel', time: '01:52:00', money: '7,52', status:'started', id: 'item1' }
-    ],
+    players: {
+        item1:
+        {
+            name: 'Angel', time: '01:52:00', money: '7,52', id: 'item1',
+            timer: {
+                start: null,
+                end: null,
+                lastPauseCount: null,
+                lastPause: null,
+                count: 0,
+                pauses: [],
+                countFormatted: {
+                    hours: '00', minutes: '00', seconds: '00'
+                },
+                status: Utils.TIMER_STOPPED,
+            }
+        }
+    },
 }
 
 getTimerInfo = (state) => {
@@ -130,19 +145,90 @@ function poolTable(state = defaultState, action) {
             }
 
         case ADD_PLAYER:
-
+            const id = Utils.uid();
             return {
                 ...state,
-                players: state.players.concat([
-                    {
+                players: {
+                    ...state.players,
+                    id: {
                         name: action.playerName,
                         time: action.initTime,
                         money: 0,
-                        status: Utils.PLAYER_STARTED,
-                        id: Utils.uid()
+                        id: id,
+                        timer: {
+                            start: null,
+                            end: null,
+                            lastPauseCount: null,
+                            lastPause: null,
+                            count: 0,
+                            pauses: [],
+                            countFormatted: {
+                                hours: '00', minutes: '00', seconds: '00'
+                            },
+                            status: Utils.TIMER_STOPPED,
+                        }
                     }
-                ])
+                }
+                // state.players.concat([
+                //     {
+                //         name: action.playerName,
+                //         time: action.initTime,
+                //         money: 0,
+                //         id: id,
+                //         timer: {
+                //             start: null,
+                //             end: null,
+                //             lastPauseCount: null,
+                //             lastPause: null,
+                //             count: 0,
+                //             pauses: [],
+                //             countFormatted: {
+                //                 hours: '00', minutes: '00', seconds: '00'
+                //             },
+                //             status: Utils.TIMER_STOPPED,
+                //         }
+                //     }
+                // ])
             };
+
+        case PLAYER_START_TIMER:
+            return {
+                ...state,
+                players: {
+                    ...state.players,
+                    [state.players[action.playerId]]: {
+                        ...state.players[action.playerId],
+                        status: Utils.PLAYER_STARTED,
+                        start: action.time
+                    }
+                }
+            }
+        case PLAYER_PAUSE_TIMER:
+            // :
+            // let pausesArr = state.timer.pauses;
+            // pausesArr.push({
+            //     init: new Date().getTime(),
+            //     end: null
+            // });
+            // return {
+            //     ...state,
+            //     timer: {
+            //         ...state.timer,
+            //         status: Utils.TIMER_PAUSED,
+            //         pauses: pausesArr
+            //     }
+            // }
+            return {
+                ...state,
+                players: {
+                    ...state.players,
+                    [state.players[action.playerId]]: {
+                        ...state.players[action.playerId],
+                        status: Utils.PLAYER_STARTED,
+                        start: action.time
+                    }
+                }
+            }
         case "RESET_STATE":
             return {
                 defaultState

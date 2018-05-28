@@ -2,7 +2,8 @@
 import '../table-events/table-events.js';
 import {
     START_TIMER, PAUSE_TIMER, UPDATE_TIMER,
-    RESET_TIMER, ADD_PLAYER
+    RESET_TIMER, ADD_PLAYER,
+    PLAYER_START_TIMER, PLAYER_PAUSE_TIMER, PLAYER_UPDATE_TIMER
 } from './types';
 
 //////////////////////////////
@@ -67,6 +68,31 @@ export function addNewPlayer(name) {
         initTime: new Date().getTime()
     }
 }
+
+export function playerStartTimer(name) {
+    return {
+        type: PLAYER_START_TIMER,
+        playerName: name,
+        initTime: new Date().getTime()
+    }
+}
+
+export function playerPauseTimer(name) {
+    return {
+        type: PLAYER_PAUSE_TIMER,
+        playerName: name,
+        initTime: new Date().getTime()
+    }
+}
+
+export function playerUpdateTimer(name) {
+    return {
+        type: PLAYER_UPDATE_TIMER,
+        playerName: name,
+        initTime: new Date().getTime()
+    }
+}
+
 
 export function resetState() {
     return {

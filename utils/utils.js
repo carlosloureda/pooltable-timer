@@ -13,8 +13,36 @@ const PLAYER_STARTED = 1;
 const PLAYER_PAUSED = 2;
 const PLAYER_STOPPED = 3;
 
+
+/**
+ * Converts an object with ids and values into an array of the values,
+ *  useful for the posts architecture we are using
+ * @param {object} object
+ */
+const objectToArray = (object) => {
+    console.log("INSIDE");
+    return Object.values(object).map(p => p)
+}
+
+
+/**
+ * Converts an array into an object which keys are the key/id of an array
+ * and the values the whole item in the array
+ * TODO: make the id a field param
+ * @param {object} object
+ */
+const arrayToObject = (array) => {
+    return array.reduce((acc, item) => {
+        return {
+            ...acc,
+            ...{[item.id] : item}
+        }
+    }, {});
+}
+
 export const Utils = {
     uid,
     TIMER_STARTED, TIMER_PAUSED, TIMER_STOPPED,
-    PLAYER_STARTED, PLAYER_PAUSED, PLAYER_STOPPED
+    PLAYER_STARTED, PLAYER_PAUSED, PLAYER_STOPPED,
+    objectToArray, arrayToObject
 }
