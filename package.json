@@ -4,10 +4,12 @@
   "description": "A simple project to bill properly to pool players in recreative pool tables billed by time",
   "private": true,
   "devDependencies": {
-    "react-native-scripts": "1.14.0",
+    "jest": "^22.4.3",
     "jest-expo": "~27.0.0",
+    "react-native-scripts": "1.14.0",
     "react-test-renderer": "16.3.1",
-    "jest": "^22.4.3"
+    "reactotron-react-native": "^1.14.0",
+    "remote-redux-devtools": "^0.5.12"
   },
   "main": "./node_modules/react-native-scripts/build/bin/crna-entry.js",
   "scripts": {

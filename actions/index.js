@@ -1,7 +1,8 @@
 // import the utils
 import '../table-events/table-events.js';
 import {
-    START_TIMER, PAUSE_TIMER, UPDATE_TIMER, RESET_TIMER
+    START_TIMER, PAUSE_TIMER, UPDATE_TIMER,
+    RESET_TIMER, ADD_PLAYER
 } from './types';
 
 //////////////////////////////
@@ -56,7 +57,24 @@ export function resetTimer() {
 //////////////////////////////
 
 // Add user to table
-    //
+/*******************************************************************************
+ *                               ADD PLAYER
+ ******************************************************************************/
+export function addNewPlayer(name) {
+    return {
+        type: ADD_PLAYER,
+        playerName: name,
+        initTime: new Date().getTime()
+    }
+}
+
+export function resetState() {
+    return {
+        type: "RESET_STATE"
+    }
+}
+
+
 
 // charge player (remove without charge)
 

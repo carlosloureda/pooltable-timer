@@ -1,0 +1,139 @@
+import React from 'react';
+import {
+  StyleSheet, Text, View, TouchableOpacity,
+  TouchableHighlight, Button, TextInput
+} from 'react-native';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+
+import TimerView from './TimerView';
+import PlayerList from './PlayerList';
+import BlzTextInput from './ui/BlzTextInput';
+
+import { connect } from 'react-redux'
+import { addNewPlayer, foo } from '../actions/index'
+
+class TableTimerView extends React.Component {
+
+  constructor(props) {
+    super(props)
+    this.onPlayerNameChange = this.onPlayerNameChange.bind(this);
+  }
+
+  state = {
+    addPlayerVisible: false,
+    playerName: null
+  };
+
+  toggleAddPlayerForm() {
+    this.setState({addPlayerVisible: ! this.state.addPlayerVisible});
+  }
+
+  onAddPlayer() {
+    this.props.addNewPlayer(this.state.playerName);
+    this.setState({
+      addPlayerVisible: ! this.state.addPlayerVisible,
+      playerName: null
+    });
+  }
+
+  onPlayerNameChange(text) {
+    this.setState({
+      ...this.state,
+      playerName: text
+    })
+  }
+
+  render() {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+
+        </View>
+        <View style={styles.mainTimer}>
+          <TimerView />
+          <View style={styles.extraButtons}>
+            <TouchableOpacity onPress={() => { this.toggleAddPlayerForm()}} >
+                <MaterialIcons name="person-add" color="#eae052" size={40}/>
+            </TouchableOpacity>
+          </View>
+        </View>
+        <View style={styles.players}>
+          { this.state.addPlayerVisible &&
+            <View style={styles.playerAdd}>
+              <View style={styles.playerAddName}>
+                <BlzTextInput
+                  text={this.state.playerName} onChange={this.onPlayerNameChange}/>
+              </View>
+              <TouchableOpacity
+                style={styles.playerAddBtn}
+                title="add" onPress={() => { this.onAddPlayer()}}
+              >
+                <FontAwesome name="save" size={40} />
+              </TouchableOpacity>
+            </View>
+          }
+          <PlayerList />
+        </View>
+      </View>
+    );
+  }
+}
+
+function mapStateToProps(state) {
+  return {
+
+  };
+}
+
+function mapDispatchToProps (dispatch) {
+  return {
+      addNewPlayer: (name) => dispatch(addNewPlayer(name))
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(TableTimerView)
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    marginTop: 24,
+    backgroundColor: 'grey',
+  },
+  header: {
+    backgroundColor: 'grey',
+    height: 5
+  },
+  mainTimer: {
+    backgroundColor: '#333333',
+    height: 100,
+    flexDirection: 'row'
+  },
+  players: {
+    backgroundColor: 'yellow',
+    flex: 1,
+    marginTop: 5
+  },
+  extraButtons: {
+    flex:1,
+    alignItems: 'center',
+    justifyContent: 'space-around'
+  },
+  playerAdd: {
+    backgroundColor: 'white',
+    height: 100,
+    flexDirection: 'row',
+    borderBottomWidth: 5,
+    borderTopWidth: 5,
+    borderColor: '#E5E5E5',
+  },
+  playerAddName: {
+    flex: 4
+
+  },
+  playerAddBtn: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  }
+});

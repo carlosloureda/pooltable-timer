@@ -1,14 +1,20 @@
 import {
-    START_TIMER, PAUSE_TIMER, UPDATE_TIMER, RESET_TIMER
+    START_TIMER, PAUSE_TIMER,
+    UPDATE_TIMER, RESET_TIMER, ADD_PLAYER
 } from '../actions/types';
 
+import {getStoredState} from 'redux-persist';
+import  Utils from '../utils/utils';
 // use combien reducers
 
 const TIMER_STARTED = 1;
 const TIMER_PAUSED = 2;
 const TIMER_STOPPED = 3;
+const PLAYER_STARTED = 1;
+const PLAYER_PAUSED = 2;
+const PLAYER_STOPPED = 3;
 
-const defaultPostState = {
+const defaultState = {
     timer: {
         start: null,
         end: null,
@@ -20,7 +26,11 @@ const defaultPostState = {
             hours: '00', minutes: '00', seconds: '00'
         },
         status: TIMER_STOPPED,
-    }
+    },
+    // players: [1,2,3],
+    players: [
+        { name: 'Angel', time: '01:52:00', money: '7,52', status:'started', id: 'item1' }
+    ],
 }
 
 getTimerInfo = (state) => {
@@ -64,7 +74,7 @@ parseTime = (count) => {
     }
 }
 
-function poolTable(state = defaultPostState, action) {
+function poolTable(state = defaultState, action) {
     switch (action.type) {
 
         case START_TIMER:
@@ -122,7 +132,27 @@ function poolTable(state = defaultPostState, action) {
                         hours: '00', minutes: '00', seconds: '00'
                     },
                     status: TIMER_STOPPED,
-                }
+                },
+                players:[],
+            }
+
+        case ADD_PLAYER:
+
+            return {
+                ...state,
+                players: state.players.concat([
+                    {
+                        name: action.playerName,
+                        time: action.initTime,
+                        money: 0,
+                        status: PLAYER_STARTED,
+                        id: Utils.uid()
+                    }
+                ])
+            };
+        case "RESET_STATE":
+            return {
+                defaultState
             }
     }
     return state;

@@ -22,16 +22,19 @@ class BlzTextInput extends React.Component {
 
     onChange = (text) => {
         this.setState({text})
+        if (this.props.onChange) {
+            this.props.onChange(text);
+        }
     }
     onBlur = () => {
         this.setState({
             filledOrFocused: false || (this.state.text  && this.state.text.length),
             focused: false
         })
-        console.log("Onblur: ", this.state);
+        // console.log("Onblur: ", this.state);
     }
     onFocus = () => {
-        console.log("onFocus: ");
+        // console.log("onFocus: ");
         this.setState({
             filledOrFocused: true, focused: true
         })

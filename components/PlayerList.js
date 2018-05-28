@@ -6,21 +6,21 @@ import {
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 import { danger, blue, lightGrey, gold, lightBlue } from '../utils/colors';
+import { connect } from 'react-redux'
 
+import { resetState } from '../actions/index'
 class PlayerList extends Component {
 
+    constructor(props) {
+        super(props);
+        // props.resetState();
+    }
+
     render() {
-        const players = [
-            { name: 'Angel', time: '01:52:00', money: '7,52', status:'started', id: 'item1' },
-            { name: 'Carlos', time: '00:45:12', money: '3,10', status:'started', id: 'item2' },
-            { name: 'Dani', time: '02:14:28', money: '9', status:'paused', id: 'item3' },
-            { name: 'Javi', time: '00:13:09', money: '0,30', status:'started', id: 'item4' },
-            { name: 'Kike', time: '01:34:57', money: '5', status:'finished', id: 'item5' },
-            { name: 'Ivika', time: '03:02:35', money: '9', status:'paused', id: 'item6' }
-        ];
+        const { players } = this.props;
         return (
             <View>
-
+                <Text>{players.length}</Text>
                 <FlatList
                     data={ players }
                     keyExtractor={(player) => player.id}
@@ -122,4 +122,16 @@ const styles = StyleSheet.create({
 
 });
 
-export default PlayerList;
+function mapStateToProps(state) {
+    return {
+      players: state.players
+    }
+}
+
+function mapDispatchToProps (dispatch) {
+    return {
+        resetState: () => dispatch(resetState()),
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(PlayerList)

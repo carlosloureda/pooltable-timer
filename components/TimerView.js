@@ -30,7 +30,7 @@ class TimerView extends Component {
 
     componentDidMount = () => {
         // this.refs.circularProgress.performTimingAnimation(100, 8000, Easing.quad);
-        this.props.resetTimer();
+        // this.props.resetTimer();
     }
 
     onStartTimer = () => {
@@ -65,7 +65,6 @@ class TimerView extends Component {
 
     render() {
         const { status, countFormatted } = this.props.timer;
-        console.log("this.props.timer: ", this.props.timer);
         return(
             <View style={styles.timerWrapper}>
                 <View style={styles.timerButtons}>
@@ -101,7 +100,7 @@ class TimerView extends Component {
                             style={styles.resetButton}
                             name='undo' size={15}
                             color={'#999'}
-                            onPress={this.resetTimer}
+                            // onPress={this.resetTimer}
                         />
                         <Text style={styles.timerPrice}>
                             {this.getTotalPrice() + ' ' + CURRENCY_SYMBOL}
@@ -191,7 +190,6 @@ const styles = StyleSheet.create({
     }
 
 });
-
 
 function mapStateToProps(state) {
     return {
