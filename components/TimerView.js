@@ -10,7 +10,7 @@ import { startTimer, pauseTimer, updateTimer, resetTimer } from '../actions/inde
 
 // import { AnimatedCircularProgress } from 'react-native-circular-progress';
 
-const utils = require('../utils/utils');
+import { Utils } from '../utils/utils';
 const timeUtils = require('../utils/time-utils');
 
 const PRICE_PER_HOUR = 4;
@@ -32,7 +32,6 @@ class TimerView extends Component {
     }
 
     onStartTimer = () => {
-        // console.log("Start timer");
         if (! this.props.timer.start) {
             this.props.startTimer();
         }
@@ -41,7 +40,6 @@ class TimerView extends Component {
         }, 1000);
     }
     onPauseTimer = () => {
-        // console.log("Pause timer");
         clearInterval(this.nIntervId);
         this.props.pauseTimer();
     }
@@ -52,7 +50,6 @@ class TimerView extends Component {
 
     resetTimer = () => {
         //TODO: add modal to ask if he/she is sure about this operation
-        // console.log("Pause timer");
         clearInterval(this.nIntervId);
         this.props.resetTimer();
     }
@@ -66,7 +63,7 @@ class TimerView extends Component {
         return(
             <View style={styles.timerWrapper}>
                 <View style={styles.timerButtons}>
-                    { status !== utils.TIMER_STARTED &&
+                    { status !== Utils.TIMER_STARTED &&
 
                         <TouchableOpacity
                             onPress={this.onStartTimer}
@@ -79,7 +76,7 @@ class TimerView extends Component {
                         </TouchableOpacity>
 
                     }
-                    { status === utils.TIMER_STARTED &&
+                    { status === Utils.TIMER_STARTED &&
 
                         <TouchableOpacity
                             onPress={this.onPauseTimer}

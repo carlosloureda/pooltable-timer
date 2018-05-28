@@ -26,6 +26,4 @@ function timeStringToMilliseconds(timeString, dateString) {
 }
 
 var res = timeStringToMilliseconds("20:00:00", "11/05/2018");
-console.log("RES: ", res);
 var res1 = timeStringToMilliseconds("20:35:00", "11/05/2018");
-console.log("RES1: ", res1);

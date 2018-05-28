@@ -31,10 +31,8 @@ class BlzTextInput extends React.Component {
             filledOrFocused: false || (this.state.text  && this.state.text.length),
             focused: false
         })
-        // console.log("Onblur: ", this.state);
     }
     onFocus = () => {
-        // console.log("onFocus: ");
         this.setState({
             filledOrFocused: true, focused: true
         })

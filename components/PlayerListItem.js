@@ -8,7 +8,11 @@ import { danger, blue, lightGrey, gold, lightBlue } from '../utils/colors';
 import { connect } from 'react-redux'
 import { resetState } from '../actions/index'
 
-const utils = require('../utils/utils');
+import {
+    playerStartTimer, playerPauseTimer, playerUpdateTimer
+} from '../actions/index';
+
+import { Utils } from '../utils/utils';
 
 class PlayerListItem extends Component {
 
@@ -47,36 +51,43 @@ class PlayerListItem extends Component {
 
     nIntervId = null;
 
+    getPlayerById = () => {
+        const { playerId, players } = this.props;
+        return players[playerId];
+    }
+
     onStartTimer = () => {
-        console.log("player timer started");
-        if (! this.props.timer.start) {
-            this.props.startTimer();
+        const player = this.getPlayerById(this.props.playerId);
+
+        if (! player.timer.start) {
+            this.props.playerStartTimer(player.id);
         }
         this.nIntervId = setInterval(() => {
-            this.props.updateTimer();
+            this.props.playerUpdateTimer(player.id);
         }, 1000);
     }
 
     onPauseTimer = () => {
-        console.log("player timer paused");
+        const player = this.getPlayerById(this.props.playerId);
         clearInterval(this.nIntervId);
-        this.props.pauseTimer();
+        this.props.playerPauseTimer(player.id);
     }
 
     render() {
-        const { player } = this.props;
+        const player = this.getPlayerById()
+        const { countFormatted } = player.timer;
         return (
 
             <View style={styles.player}>
                 <View style={styles.playerColumn1}>
                     <Text style={styles.playerName}>{player.name}</Text>
                     <View style={styles.playerButtons}>
-                        { player.status !== utils.PLAYER_STARTED &&
+                        { player.timer.status !== Utils.PLAYER_STARTED &&
                             <TouchableOpacity onPress={this.onStartTimer}>
                                 <FontAwesome name='play' size={25} color={ blue } />
                             </TouchableOpacity>
                         }
-                        { player.status === utils.PLAYER_STARTED &&
+                        { player.timer.status === Utils.PLAYER_STARTED &&
                             <TouchableOpacity onPress={this.onPauseTimer}>
                                 <FontAwesome name='pause' size={25} color={ lightGrey } />
                             </TouchableOpacity>
@@ -95,12 +106,10 @@ class PlayerListItem extends Component {
                 <View style={styles.playerColumn2}>
                     <View style={styles.playerTime}>
                         <Text style={styles.timerCountPrimary}>
-                            {/* { countFormatted.hours }:{ countFormatted.minutes } */}
-                            00:00
+                            { countFormatted.hours }:{ countFormatted.minutes }
                         </Text>
                         <Text style={styles.timerCountSeconds}>
-                            {/* { countFormatted.seconds } */}
-                            00
+                            { countFormatted.seconds }
                         </Text>
                     </View>
                     <Text style={styles.playerMoney}>{player.money} €</Text>
@@ -158,4 +167,18 @@ const styles = StyleSheet.create({
 
 });
 
-export default PlayerListItem
+function mapStateToProps(state) {
+    return {
+      players: state.players
+    }
+}
+
+function mapDispatchToProps (dispatch) {
+    return {
+        playerStartTimer: (id) => dispatch(playerStartTimer(id)),
+        playerPauseTimer: (id) => dispatch(playerPauseTimer(id)),
+        playerUpdateTimer: (id) => dispatch(playerUpdateTimer(id)),
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(PlayerListItem)

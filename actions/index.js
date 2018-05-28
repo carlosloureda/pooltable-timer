@@ -69,27 +69,27 @@ export function addNewPlayer(name) {
     }
 }
 
-export function playerStartTimer(name) {
+export function playerStartTimer(id) {
     return {
         type: PLAYER_START_TIMER,
-        playerName: name,
-        initTime: new Date().getTime()
+        playerId: id,
+        time: new Date().getTime()
     }
 }
 
-export function playerPauseTimer(name) {
+export function playerPauseTimer(id) {
     return {
         type: PLAYER_PAUSE_TIMER,
-        playerName: name,
-        initTime: new Date().getTime()
+        playerId: id,
+        time: new Date().getTime()
     }
 }
 
-export function playerUpdateTimer(name) {
+export function playerUpdateTimer(id) {
     return {
         type: PLAYER_UPDATE_TIMER,
-        playerName: name,
-        initTime: new Date().getTime()
+        playerId: id,
+        time: new Date().getTime()
     }
 }
 

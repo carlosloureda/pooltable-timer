@@ -20,7 +20,6 @@ const PLAYER_STOPPED = 3;
  * @param {object} object
  */
 const objectToArray = (object) => {
-    console.log("INSIDE");
     return Object.values(object).map(p => p)
 }
 

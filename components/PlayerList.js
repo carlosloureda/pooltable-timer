@@ -20,8 +20,6 @@ class PlayerList extends Component {
     }
 
     render() {
-        console.log("UTIls: ", Utils);
-        console.log("this.props.players: ", this.props.players);
         const players = Utils.objectToArray(this.props.players);
         return (
             <View>
@@ -30,7 +28,7 @@ class PlayerList extends Component {
                     keyExtractor={(player) => player.id}
                     ItemSeparatorComponent={() => <View style={{height: 5, backgroundColor: '#E5E5E5'}}/>}
                     renderItem={({item}) =>
-                        <PlayerListItem player={item} />
+                        <PlayerListItem playerId={item.id} />
                     }
                 />
             </View>
