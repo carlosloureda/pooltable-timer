@@ -16,38 +16,56 @@ import { Utils } from '../utils/utils';
 
 class PlayerListItem extends Component {
 
+
     constructor(props) {
         super(props)
         this.onStartTimer = this.onStartTimer.bind(this);
         this.onPauseTimer = this.onPauseTimer.bind(this);
+        this.timerRunning = false;
     }
 
-    // TODO: add the play button behaviour
-        // each player it is individual timer
-    // TODO: add the stop button behaviour
+    // magic from outside :)
+    componentDidUpdate(prevProps, prevState) {
+        const player = this.getPlayerById();
+        const { timer, playerId } = this.props;
+
+        let forcedStart = false;
+
+        let prevPlayer = prevProps.players[playerId];
+        console.log("prevPlayer: ", prevPlayer);
+        console.log("player: ", player);
+        if (prevProps.timer.status != this.props.timer.status) {
+
+            forcedStart = this.props.timer.status === Utils.PLAYER_STARTED;
+            if ( this.props.timer.status === Utils.PLAYER_STARTED ) {
+                console.log("[pListItem did update]: on forced start from timer: ", player.id);
+                this.onStartTimer();
+                //  FOr auto started players
+            } else if(this.props.timer.status === Utils.PLAYER_PAUSED){
+                console.log("[pListItem did update]: on forced pause from timer: ", player.id);
+                this.onPauseTimer();
+            }
+        }
+    }
+
     // TODO: add the delete player behaviour
     // TODO: add the reset player timer behaviour
 
-    tmp() {
+    // For charging the players
 
-        players: [
-            {
-                name: 'Angel', time: '01:52:00', money: '7,52', id: 'item1',
-                timer: {
-                    start: null,
-                    end: null,
-                    lastPauseCount: null,
-                    lastPause: null,
-                    count: 0,
-                    pauses: [],
-                    countFormatted: {
-                        hours: '00', minutes: '00', seconds: '00'
-                    },
-                    status: Utils.TIMER_STOPPED,
-                }
-            }
-        ]
-    }
+        //  When adding new player:
+            // If general timer is init, the timer for that player is init
+            // IF not in the same page
+            // 'Add chargableTime to the remaining users'
+
+        // Pause a player
+            // 'Add chargableTime to the remaining users'
+            // set the pause for a player
+
+        // remove player
+            // 'Add chargableTime to the remaining users'
+            // If:   last player -> end game
+            // else: set the end time y elapased a este user
 
     nIntervId = null;
 
@@ -58,19 +76,20 @@ class PlayerListItem extends Component {
 
     onStartTimer = () => {
         const player = this.getPlayerById(this.props.playerId);
-
-        if (! player.timer.start) {
-            this.props.playerStartTimer(player.id);
-        }
+        const now = new Date().getTime();
+        this.props.playerStartTimer(player.id, now);
+        this.timerRunning = true;
         this.nIntervId = setInterval(() => {
-            this.props.playerUpdateTimer(player.id);
+            this.props.playerUpdateTimer(player.id, now);
         }, 1000);
     }
 
     onPauseTimer = () => {
         const player = this.getPlayerById(this.props.playerId);
+        const now = new Date().getTime();
         clearInterval(this.nIntervId);
-        this.props.playerPauseTimer(player.id);
+        this.props.playerPauseTimer(player.id, now);
+        this.timerRunning = false;
     }
 
     render() {
@@ -169,15 +188,16 @@ const styles = StyleSheet.create({
 
 function mapStateToProps(state) {
     return {
-      players: state.players
+      players: state.players,
+      timer: state.timer
     }
 }
 
 function mapDispatchToProps (dispatch) {
     return {
-        playerStartTimer: (id) => dispatch(playerStartTimer(id)),
-        playerPauseTimer: (id) => dispatch(playerPauseTimer(id)),
-        playerUpdateTimer: (id) => dispatch(playerUpdateTimer(id)),
+        playerStartTimer: (id, time) => dispatch(playerStartTimer(id, time)),
+        playerPauseTimer: (id, time) => dispatch(playerPauseTimer(id, time)),
+        playerUpdateTimer: (id, time) => dispatch(playerUpdateTimer(id, time)),
     }
 }
 

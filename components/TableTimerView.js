@@ -11,7 +11,8 @@ import PlayerList from './PlayerList';
 import BlzTextInput from './ui/BlzTextInput';
 
 import { connect } from 'react-redux'
-import { addNewPlayer, foo } from '../actions/index'
+import { addNewPlayer, playerStartTimer, foo } from '../actions/index'
+import { Utils } from '../utils/utils';
 
 class TableTimerView extends React.Component {
 
@@ -30,7 +31,12 @@ class TableTimerView extends React.Component {
   }
 
   onAddPlayer() {
-    this.props.addNewPlayer(this.state.playerName);
+    const id = Utils.uid();
+    this.props.addNewPlayer(this.state.playerName, id);
+    if (this.props.timer.status === Utils.PLAYER_STARTED) {
+      console.log("TIMER INIT ");
+      this.props.playerStartTimer(id, new Date().getTime())
+    }
     this.setState({
       addPlayerVisible: ! this.state.addPlayerVisible,
       playerName: null
@@ -82,13 +88,15 @@ class TableTimerView extends React.Component {
 
 function mapStateToProps(state) {
   return {
-
+    players: state.players,
+    timer: state.timer
   };
 }
 
 function mapDispatchToProps (dispatch) {
   return {
-      addNewPlayer: (name) => dispatch(addNewPlayer(name))
+      addNewPlayer: (name, id) => dispatch(addNewPlayer(name, id)),
+      playerStartTimer: (id, time) => dispatch(playerStartTimer(id, time)),
   }
 }
 

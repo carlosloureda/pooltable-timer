@@ -22,31 +22,13 @@ const defaultState = {
         },
         status: Utils.TIMER_STOPPED,
     },
-    players: {
-        item1:
-        {
-            name: 'Angel', time: '01:52:00', money: '7,52', id: 'item1',
-            timer: {
-                start: null,
-                end: null,
-                lastPauseCount: null,
-                lastPause: null,
-                count: 0,
-                pauses: [],
-                countFormatted: {
-                    hours: '00', minutes: '00', seconds: '00'
-                },
-                status: Utils.TIMER_STOPPED,
-            }
-        }
-    },
+    players: {}
 }
 
 getTimerInfo = (state) => {
     var now = new Date().getTime();
     let totalCount = 0;
     if (state.timer.pauses && state.timer.pauses.length) {
-
         // desde start hasta primera pausa
         totalCount = state.timer.pauses[0].init - state.timer.start;
 
@@ -72,15 +54,18 @@ getPlayerTimerInfo = (state, playerId) => {
     const player = state.players[playerId];
     var now = new Date().getTime();
     let totalCount = 0;
+    // console.log("************************************************************");
+    // console.log("playerId: ", playerId);
     if (player.timer.pauses && player.timer.pauses.length) {
-
         // desde start hasta primera pausa
         totalCount = player.timer.pauses[0].init - player.timer.start;
+        // console.log("Pauses, from init; totalCount: ", totalCount);
 
         // desde pausa ultima a start siguiente
         for (let i = 0; i < player.timer.pauses.length; i++) {
             if (i != player.timer.pauses.length - 1) { // no estamos en la ultima
                 totalCount += player.timer.pauses[i + 1].init - player.timer.pauses[i].end;
+                // console.log("Pauses, between pauses; totalCount: ", totalCount);
             }
         }
 
@@ -88,10 +73,14 @@ getPlayerTimerInfo = (state, playerId) => {
         let lastPause = player.timer.pauses[player.timer.pauses.length - 1];
         if (lastPause && lastPause.end) {
             totalCount += now - lastPause.end;
+            // console.log("Pauses, from last pause; totalCount: ", totalCount);
         }
     } else { // no pauses
         totalCount = now - player.timer.start;
+        // console.log("No pauses totalCount: ", totalCount);
     }
+    // console.log("FINAL totalCount: ", totalCount);
+    // console.log("************************************************************");
     return totalCount;
 }
 
@@ -111,39 +100,42 @@ parseTime = (count) => {
 }
 
 function poolTable(state = defaultState, action) {
+    let pausesObj = null;
     switch (action.type) {
-
         case START_TIMER:
+        console.log("START_TIMER");
+            pausesObj = state.timer.pauses;
+            if (state.timer.status === Utils.TIMER_PAUSED) {
+                const actualCount = getTimerInfo(state);
+                pausesObj[pausesObj.length -1].end = new Date().getTime();
+            }
             return {
                 ...state,
                 timer: {
                     ...state.timer,
+                    start: state.timer.start ? state.timer.start : action.time,
                     status: Utils.TIMER_STARTED,
-                    start: action.time
+                    pauses: pausesObj
                 }
             }
         case PAUSE_TIMER:
-            let pausesArr = state.timer.pauses;
-            pausesArr.push({
-                init: new Date().getTime(),
-                end: null
-            });
+            let _pauses = state.timer.pauses;
+            if ( _pauses.length > 0 && _pauses[_pauses.length -1 ].init && !_pauses[_pauses.length -1 ].end ) {
+                return state;
+            }
             return {
                 ...state,
                 timer: {
                     ...state.timer,
                     status: Utils.TIMER_PAUSED,
-                    pauses: pausesArr
+                    pauses: state.timer.pauses.concat([{
+                        init: new Date().getTime(),
+                        end: null
+                    }])
                 }
             }
         case UPDATE_TIMER:
-            const pausesObj = state.timer.pauses;
             const actualCount = getTimerInfo(state);
-            //TODO:  maybe the end of the pause should go in the start??
-            if (state.timer.status === Utils.TIMER_PAUSED) {
-                pausesObj[pausesObj.length -1].end = new Date().getTime();
-            }
-
             return {
                 ...state,
                 timer: {
@@ -151,7 +143,6 @@ function poolTable(state = defaultState, action) {
                     count: actualCount,
                     status: Utils.TIMER_STARTED,
                     countFormatted: parseTime(actualCount),
-                    pauses: state.timer.pauses
                 }
             }
         case RESET_TIMER:
@@ -172,17 +163,24 @@ function poolTable(state = defaultState, action) {
                 players:[],
             }
 
+        /**
+         *  When adding new player:
+         *
+         *  If general timer is init, the timer for that player is init, esle not-init
+         *  'Add chargableTime to the remaining users'
+        */
         case ADD_PLAYER:
-            const id = Utils.uid();
+            //TODO: Add 'chargable time to the remaining users'
+            const id = action.id ? action.id : Utils.uid();
             return {
                 ...state,
                 players: {
                     ...state.players,
                     [id]: {
-                        name: action.playerName,
-                        time: action.initTime,
-                        money: 0,
                         id: id,
+                        name: action.playerName,
+                        time: action.time,
+                        money: 0,
                         timer: {
                             start: null,
                             end: null,
@@ -193,14 +191,20 @@ function poolTable(state = defaultState, action) {
                             countFormatted: {
                                 hours: '00', minutes: '00', seconds: '00'
                             },
-                            status: Utils.TIMER_STOPPED,
+                            status: Utils.PLAYER_STOPPED,
                         }
                     }
                 }
             };
 
         case PLAYER_START_TIMER:
-            return {
+
+        console.log("PLAYER_START_TIMER");
+            pausesObj = state.players[action.playerId].timer.pauses;
+            if (state.players[action.playerId].timer.status === Utils.TIMER_PAUSED) {
+                pausesObj[pausesObj.length -1].end = new Date().getTime();
+            }
+            var _new = {
                 ...state,
                 players: {
                     ...state.players,
@@ -209,12 +213,22 @@ function poolTable(state = defaultState, action) {
                         timer: {
                             ...state.players[action.playerId].timer,
                             status: Utils.PLAYER_STARTED,
-                            start: action.time
+                            start: state.players[action.playerId].timer.start ?
+                                    state.players[action.playerId].timer.start : action.time,
+                            pauses: pausesObj
                         }
                     }
                 }
             }
+            return _new;
         case PLAYER_PAUSE_TIMER:
+            let _pPauses = state.players[action.playerId].timer.pauses;
+            // Dont want to update if is already in pause
+            if ( _pPauses.length > 0 &&
+                _pPauses[_pPauses.length -1 ].init &&  !_pPauses[_pPauses.length -1 ].end
+            ) {
+                return state;
+            }
             return {
                 ...state,
                 players: {
@@ -235,12 +249,7 @@ function poolTable(state = defaultState, action) {
                 }
             }
         case PLAYER_UPDATE_TIMER:
-            const t_pausesObj = state.players[action.playerId].timer.pauses;
             const t_actualCount = getPlayerTimerInfo(state, action.playerId);
-            //TODO:  maybe the end of the pause should go in the start??
-            if (state.players[action.playerId].timer.status === Utils.TIMER_PAUSED) {
-                t_pausesObj[t_pausesObj.length -1].end = new Date().getTime();
-            }
 
             return {
                 ...state,
@@ -253,7 +262,6 @@ function poolTable(state = defaultState, action) {
                             count: t_actualCount,
                             status: Utils.TIMER_STARTED,
                             countFormatted: parseTime(t_actualCount),
-                            pauses: state.players[action.playerId].timer.pauses
                         }
                     }
                 }

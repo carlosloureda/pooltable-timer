@@ -17,20 +17,20 @@ import {
 /*******************************************************************************
  *                               START TIMER
  ******************************************************************************/
-export function startTimer() {
+export function startTimer(time) {
     return {
         type: START_TIMER,
-        time: new Date().getTime()
+        time: time
     }
 }
 
 /*******************************************************************************
  *                               PAUSE TIMER
  ******************************************************************************/
-export function pauseTimer() {
+export function pauseTimer(time) {
     return {
         type: PAUSE_TIMER,
-        time: new Date().getTime()
+        time: time
     }
 }
 
@@ -39,8 +39,7 @@ export function pauseTimer() {
  ******************************************************************************/
 export function updateTimer() {
     return {
-        type: UPDATE_TIMER,
-        time: new Date().getTime()
+        type: UPDATE_TIMER
     }
 }
 
@@ -61,35 +60,36 @@ export function resetTimer() {
 /*******************************************************************************
  *                               ADD PLAYER
  ******************************************************************************/
-export function addNewPlayer(name) {
+export function addNewPlayer(name, id) {
+    console.log("add new player id: ", id);
     return {
         type: ADD_PLAYER,
         playerName: name,
-        initTime: new Date().getTime()
+        time: new Date().getTime(),
+        id: id
     }
 }
 
-export function playerStartTimer(id) {
+export function playerStartTimer(id, time) {
     return {
         type: PLAYER_START_TIMER,
         playerId: id,
-        time: new Date().getTime()
+        time: time
     }
 }
 
-export function playerPauseTimer(id) {
+export function playerPauseTimer(id, time) {
     return {
         type: PLAYER_PAUSE_TIMER,
         playerId: id,
-        time: new Date().getTime()
+        time: time
     }
 }
 
 export function playerUpdateTimer(id) {
     return {
         type: PLAYER_UPDATE_TIMER,
-        playerId: id,
-        time: new Date().getTime()
+        playerId: id
     }
 }
 

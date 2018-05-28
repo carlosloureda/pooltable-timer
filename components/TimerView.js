@@ -6,7 +6,10 @@ import {
 import { FontAwesome } from '@expo/vector-icons';
 
 import { connect } from 'react-redux'
-import { startTimer, pauseTimer, updateTimer, resetTimer } from '../actions/index';
+import {
+    startTimer, pauseTimer, updateTimer, resetTimer,
+    playerStartTimer, playerPauseTimer
+} from '../actions/index';
 
 // import { AnimatedCircularProgress } from 'react-native-circular-progress';
 
@@ -32,16 +35,27 @@ class TimerView extends Component {
     }
 
     onStartTimer = () => {
-        if (! this.props.timer.start) {
-            this.props.startTimer();
-        }
+        console.log("TIMERVIEW START TIMER");
+        const now = new Date().getTime();
+        this.props.startTimer(now);
+        const playersArr = Utils.objectToArray(this.props.players);
+        playersArr.forEach((player) => {
+            this.props.playerStartTimer(player.id, now);
+        });
+
         this.nIntervId = setInterval(() => {
             this.props.updateTimer();
         }, 1000);
     }
+
     onPauseTimer = () => {
+        const now = new Date().getTime();
         clearInterval(this.nIntervId);
-        this.props.pauseTimer();
+        this.props.pauseTimer(now);
+        const playersArr = Utils.objectToArray(this.props.players);
+        playersArr.forEach((player) => {
+            this.props.playerPauseTimer(player.id, now);
+        });
     }
 
     stopTimer = () => {
@@ -189,15 +203,18 @@ const styles = StyleSheet.create({
 function mapStateToProps(state) {
     return {
         timer: state.timer,
+        players: state.players,
     };
 }
 
 function mapDispatchToProps (dispatch) {
     return {
-        startTimer: () => dispatch(startTimer()),
-        pauseTimer: () => dispatch(pauseTimer()),
+        startTimer: (time) => dispatch(startTimer(time)),
+        pauseTimer: (time) => dispatch(pauseTimer(time)),
         updateTimer: () => dispatch(updateTimer()),
         resetTimer: () => dispatch(resetTimer()),
+        playerStartTimer: (id, time) => dispatch(playerStartTimer(id, time)),
+        playerPauseTimer: (id, time) => dispatch(playerPauseTimer(id, time)),
     }
 }
 
