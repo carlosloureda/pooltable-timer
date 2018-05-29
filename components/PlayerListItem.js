@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import {
-    FlatList, View, Text, StyleSheet, TouchableOpacity
+    FlatList, View, Text, StyleSheet, TouchableOpacity, Alert
 } from 'react-native';
 
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -9,7 +9,7 @@ import { connect } from 'react-redux'
 import { resetState } from '../actions/index'
 
 import {
-    playerStartTimer, playerPauseTimer, playerUpdateTimer
+    playerStartTimer, playerPauseTimer, playerUpdateTimer, chargePlayer
 } from '../actions/index';
 
 import { Utils } from '../utils/utils';
@@ -21,7 +21,7 @@ class PlayerListItem extends Component {
         super(props)
         this.onStartTimer = this.onStartTimer.bind(this);
         this.onPauseTimer = this.onPauseTimer.bind(this);
-        this.timerRunning = false;
+        this.onChargePlayer = this.onChargePlayer.bind(this);
     }
 
     // magic from outside :)
@@ -32,8 +32,6 @@ class PlayerListItem extends Component {
         let forcedStart = false;
 
         let prevPlayer = prevProps.players[playerId];
-        console.log("prevPlayer: ", prevPlayer);
-        console.log("player: ", player);
         if (prevProps.timer.status != this.props.timer.status) {
 
             forcedStart = this.props.timer.status === Utils.PLAYER_STARTED;
@@ -52,16 +50,6 @@ class PlayerListItem extends Component {
     // TODO: add the reset player timer behaviour
 
     // For charging the players
-
-        //  When adding new player:
-            // If general timer is init, the timer for that player is init
-            // IF not in the same page
-            // 'Add chargableTime to the remaining users'
-
-        // Pause a player
-            // 'Add chargableTime to the remaining users'
-            // set the pause for a player
-
         // remove player
             // 'Add chargableTime to the remaining users'
             // If:   last player -> end game
@@ -78,7 +66,6 @@ class PlayerListItem extends Component {
         const player = this.getPlayerById(this.props.playerId);
         const now = new Date().getTime();
         this.props.playerStartTimer(player.id, now);
-        this.timerRunning = true;
         this.nIntervId = setInterval(() => {
             this.props.playerUpdateTimer(player.id, now);
         }, 1000);
@@ -89,38 +76,65 @@ class PlayerListItem extends Component {
         const now = new Date().getTime();
         clearInterval(this.nIntervId);
         this.props.playerPauseTimer(player.id, now);
-        this.timerRunning = false;
+    }
+
+    onChargePlayer = () => {
+        const player = this.getPlayerById(this.props.playerId);
+        Alert.alert(
+            '¿Seguro?',
+            `¿Quieres cobrar y sacar de la partida a ${player.name}?`,
+            [
+                {
+                    text: 'No', onPress: () => {}, style: 'cancel'
+                },
+                {
+                    text: 'Sí, ¡cobremos!.', onPress: () => {
+                        clearInterval(this.nIntervId);
+                        this.props.chargePlayer(player.id)
+                    }
+                },
+            ],
+            { cancelable: false }
+        );
     }
 
     render() {
         const player = this.getPlayerById()
         const { countFormatted } = player.timer;
+        const playerCharged = player.timer.status === Utils.PLAYER_CHARGED;
         return (
 
             <View style={styles.player}>
                 <View style={styles.playerColumn1}>
                     <Text style={styles.playerName}>{player.name}</Text>
-                    <View style={styles.playerButtons}>
-                        { player.timer.status !== Utils.PLAYER_STARTED &&
-                            <TouchableOpacity onPress={this.onStartTimer}>
-                                <FontAwesome name='play' size={25} color={ blue } />
+                    { ! playerCharged &&
+                        <View style={styles.playerButtons}>
+                            { player.timer.status !== Utils.PLAYER_STARTED &&
+                                <TouchableOpacity onPress={this.onStartTimer}>
+                                    <FontAwesome name='play' size={25} color={ blue } />
+                                </TouchableOpacity>
+                            }
+                            { player.timer.status === Utils.PLAYER_STARTED &&
+                                <TouchableOpacity onPress={this.onPauseTimer}>
+                                    <FontAwesome name='pause' size={25} color={ lightGrey } />
+                                </TouchableOpacity>
+                            }
+                            <TouchableOpacity onPress={this.onChargePlayer}>
+                                <FontAwesome name='euro' size={25} color={ gold } />
                             </TouchableOpacity>
-                        }
-                        { player.timer.status === Utils.PLAYER_STARTED &&
-                            <TouchableOpacity onPress={this.onPauseTimer}>
-                                <FontAwesome name='pause' size={25} color={ lightGrey } />
+                            {/* <TouchableOpacity>
+                                <FontAwesome name='undo' size={25} color={'black'} />
                             </TouchableOpacity>
-                        }
-                        <TouchableOpacity>
-                            <FontAwesome name='euro' size={25} color={ gold } />
-                        </TouchableOpacity>
-                        <TouchableOpacity>
-                            <FontAwesome name='undo' size={25} color={'black'} />
-                        </TouchableOpacity>
-                        <TouchableOpacity>
-                            <FontAwesome name='trash' size={25} color={ danger } />
-                        </TouchableOpacity>
-                    </View>
+                            <TouchableOpacity>
+                                <FontAwesome name='trash' size={25} color={ danger } />
+                            </TouchableOpacity> */}
+                        </View>
+                    }
+                    { !! playerCharged &&
+                        <View style={styles.playerButtons}>
+                            <Text>Cobrado</Text>
+                        </View>
+                    }
                 </View>
                 <View style={styles.playerColumn2}>
                     <View style={styles.playerTime}>
@@ -198,6 +212,7 @@ function mapDispatchToProps (dispatch) {
         playerStartTimer: (id, time) => dispatch(playerStartTimer(id, time)),
         playerPauseTimer: (id, time) => dispatch(playerPauseTimer(id, time)),
         playerUpdateTimer: (id, time) => dispatch(playerUpdateTimer(id, time)),
+        chargePlayer: (id) => dispatch(chargePlayer(id)),
     }
 }
 

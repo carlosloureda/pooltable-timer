@@ -3,7 +3,8 @@ import '../table-events/table-events.js';
 import {
     START_TIMER, PAUSE_TIMER, UPDATE_TIMER,
     RESET_TIMER, ADD_PLAYER,
-    PLAYER_START_TIMER, PLAYER_PAUSE_TIMER, PLAYER_UPDATE_TIMER
+    PLAYER_START_TIMER, PLAYER_PAUSE_TIMER,
+    PLAYER_UPDATE_TIMER, PLAYER_CHARGE
 } from './types';
 
 //////////////////////////////
@@ -93,6 +94,12 @@ export function playerUpdateTimer(id) {
     }
 }
 
+export function chargePlayer(id) {
+    return {
+        type: PLAYER_CHARGE,
+        playerId: id
+    }
+}
 
 export function resetState() {
     return {
@@ -100,9 +107,6 @@ export function resetState() {
     }
 }
 
-
-
-// charge player (remove without charge)
 
 
 // pause user (init)

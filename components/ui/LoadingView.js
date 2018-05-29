@@ -10,7 +10,7 @@ export default class LoadingView extends React.Component {
             // TODO: create this view
             <View style={styles.container}>
                 <Image
-                    source={ require('../assets/images/pool_10_ball.jpg') }
+                    source={ require('../../assets/images/pool_10_ball.jpg') }
                     style = {{width:200, height: 200}}
                 />
             </View>

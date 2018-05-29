@@ -4,7 +4,7 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/lib/integration/react';
 import { persistor, store } from './store';
 
-import LoadingView from './components/LoadingView';
+import LoadingView from './components/ui/LoadingView';
 import TableTimerView from './components/TableTimerView';
 
 import './config/ReactotronConfig.js';

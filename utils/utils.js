@@ -12,6 +12,7 @@ const TIMER_STOPPED = 3;
 const PLAYER_STARTED = 1;
 const PLAYER_PAUSED = 2;
 const PLAYER_STOPPED = 3;
+const PLAYER_CHARGED = 4;
 
 
 /**

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 
 import {
-    View, Text, StyleSheet, Button, TouchableOpacity, Easing
+    View, Text, StyleSheet, Button, TouchableOpacity, Easing, Alert
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 
@@ -35,7 +35,6 @@ class TimerView extends Component {
     }
 
     onStartTimer = () => {
-        console.log("TIMERVIEW START TIMER");
         const now = new Date().getTime();
         this.props.startTimer(now);
         const playersArr = Utils.objectToArray(this.props.players);
@@ -63,9 +62,28 @@ class TimerView extends Component {
     }
 
     resetTimer = () => {
-        //TODO: add modal to ask if he/she is sure about this operation
-        clearInterval(this.nIntervId);
-        this.props.resetTimer();
+        Alert.alert(
+            '¿Seguro?',
+            `Al reiniciar contador borralas a todos los jugadores de la partida.`,
+            [
+                {
+                    text: 'No', onPress: () => {}, style: 'cancel'
+                },
+                {
+                    text: 'Sí, reinicia.', onPress: () => {
+                        const playersArr = Utils.objectToArray(this.props.players);
+                        const now = new Date().getTime();
+                        clearInterval(this.nIntervId);
+                        this.props.pauseTimer(now);
+                        playersArr.forEach((player) => {
+                            this.props.playerPauseTimer(player.id, now);
+                        });
+                        this.props.resetTimer();
+                    }
+                },
+            ],
+            { cancelable: false }
+        );
     }
 
     getTotalPrice = () => {
@@ -109,7 +127,7 @@ class TimerView extends Component {
                             style={styles.resetButton}
                             name='undo' size={15}
                             color={'#999'}
-                            // onPress={this.resetTimer}
+                            onPress={this.resetTimer}
                         />
                         <Text style={styles.timerPrice}>
                             {this.getTotalPrice() + ' ' + CURRENCY_SYMBOL}
