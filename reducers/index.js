@@ -21,8 +21,14 @@ const defaultState = {
             hours: '00', minutes: '00', seconds: '00'
         },
         status: Utils.TIMER_STOPPED,
+        // Helpers for my quick-dirty algorith,m TODO:
+        lastPLayerEntryTime: null,
+        lastPLayerChargedTime: null,
+        lastPLayerChargedId: null,
+        lastPLayerPauseTime: null,
     },
-    players: {}
+    players: {},
+    playersPendingPayment: null
 }
 
 getTimerInfo = (state) => {
@@ -54,18 +60,14 @@ getPlayerTimerInfo = (state, playerId) => {
     const player = state.players[playerId];
     var now = new Date().getTime();
     let totalCount = 0;
-    // console.log("************************************************************");
-    // console.log("playerId: ", playerId);
     if (player.timer.pauses && player.timer.pauses.length) {
         // desde start hasta primera pausa
         totalCount = player.timer.pauses[0].init - player.timer.start;
-        // console.log("Pauses, from init; totalCount: ", totalCount);
 
         // desde pausa ultima a start siguiente
         for (let i = 0; i < player.timer.pauses.length; i++) {
             if (i != player.timer.pauses.length - 1) { // no estamos en la ultima
                 totalCount += player.timer.pauses[i + 1].init - player.timer.pauses[i].end;
-                // console.log("Pauses, between pauses; totalCount: ", totalCount);
             }
         }
 
@@ -73,16 +75,65 @@ getPlayerTimerInfo = (state, playerId) => {
         let lastPause = player.timer.pauses[player.timer.pauses.length - 1];
         if (lastPause && lastPause.end) {
             totalCount += now - lastPause.end;
-            // console.log("Pauses, from last pause; totalCount: ", totalCount);
         }
     } else { // no pauses
         totalCount = now - player.timer.start;
-        // console.log("No pauses totalCount: ", totalCount);
     }
-    // console.log("FINAL totalCount: ", totalCount);
-    // console.log("************************************************************");
     return totalCount;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+/**
+ * Checks if an user is on a pause
+ * @param { string } id - Id of the user to be checked.
+ */
+const isUserPaused = (id, state) => {
+    let pausesArrLength = state.players[id].time.pauses.length;
+    if (pausesArrLength) {
+        return state.players[id].time.pauses[pausesArrLength - 1].end ? false : true
+    }
+    return false;
+}
+
+/**
+ * Gets the number of active players in the table.
+ * This is the ones that haven't payed the table and are not in a pause.
+ */
+const getActivePlayersCount = (state) => {
+    let nPendingPlayers = 0;
+    for (userId in state.playersPendingPayment) {
+        nPendingPlayers += ! isUserPaused(userId) ? 1 : 0;
+    }
+    return nPendingPlayers;
+}
+
+/**
+ * seek for the latest event time, a user entry, a user exit or a pause
+ */
+const getLastEventTime = () => Math.max(entryTime, chargedTime, userPauseTime);
+
+/**
+ * Adds the billable time to the active users,
+ * @param {Number} now, the now moment where the event happens
+ * the billable amount of time to a player
+ */
+const addTimeToActiveUsers = (nowTime) => {
+        // calculate time from now to last event entry
+    let lastTime = getLastEventTime();
+    let activePlayersCount = getActivePlayersCount();
+    let timeToBill = activePlayersCount ? (nowTime - lastTime) / activePlayersCount : 0;
+    for (userId in usersPendingPayment) {
+        let user = usersPendingPayment[userId];
+        if (! isUserPaused(user.id)) {
+            user.time.billable += timeToBill;
+        }
+    };
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 
 parseTime = (count) => {
     let miliseconds = count % 1000;
@@ -204,7 +255,7 @@ function poolTable(state = defaultState, action) {
             if (state.players[action.playerId].timer.status === Utils.TIMER_PAUSED) {
                 pausesObj[pausesObj.length -1].end = new Date().getTime();
             }
-            var _new = {
+            return {
                 ...state,
                 players: {
                     ...state.players,
@@ -220,7 +271,6 @@ function poolTable(state = defaultState, action) {
                     }
                 }
             }
-            return _new;
         case PLAYER_PAUSE_TIMER:
             let _pPauses = state.players[action.playerId].timer.pauses;
             // Dont want to update if is already in pause
