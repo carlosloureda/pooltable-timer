@@ -37,7 +37,29 @@ class TimerView extends Component {
     }
     nIntervId = null;
 
-
+    /**
+     * We want to keep track of time even when app is closed!
+     * // TODO: push notification when time has been running for too long?
+     */
+    componentDidMount = () => {
+        const { timer } = this.props;
+        console.log("componentDidMount: (nIntervid is) : ", this.nIntervId);
+        console.log("timer.start: ", timer.start);
+        if (! this.nIntervId && timer.start ) {
+            // TODO: children
+            if(timer.status === Utils.TIMER_STARTED) {
+                console.log("The timer is supposed to be started ...");
+                this.nIntervId = setInterval(() => {
+                    this.onUpdateTimer();
+                }, 1000);
+            } else if (timer.status === Utils.TIMER_PAUSED) {
+                console.log("The timer is supposed to be paused ...");
+                this.onUpdateTimer();
+            }
+        }
+        // this.refs.circularProgress.performTimingAnimation(100, 8000, Easing.quad);
+        // this.props.resetTimer();
+    }
 
     getTimerInfo = () => {
         const { timer } = this.props;
@@ -133,6 +155,13 @@ class TimerView extends Component {
                             this.props.playerPauseTimer(player.id, now);
                         });
                         this.props.resetTimer();
+                        // TODO: reset children
+                        this.setState({
+                            count: 0,
+                            countFormatted: {
+                                hours: '00', minutes: '00', seconds: '00'
+                            }
+                        })
                     }
                 },
             ],
@@ -141,7 +170,7 @@ class TimerView extends Component {
     }
 
     getTotalPrice = () => {
-        return timeUtils.roundNumber(this.props.timer.count * PRICER_PER_MS, 2);
+        return timeUtils.roundNumber(this.state.count * PRICER_PER_MS, 2);
     }
 
     render() {

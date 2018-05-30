@@ -56,11 +56,29 @@ class PlayerListItem extends Component {
     // TODO: add the delete player behaviour
     // TODO: add the reset player timer behaviour
 
-    // For charging the players
-        // remove player
-            // 'Add chargableTime to the remaining users'
-            // If:   last player -> end game
-            // else: set the end time y elapased a este user
+    /**
+     * We want to keep track of time even when app is closed!
+     */
+    componentDidMount = () => {
+
+        const player = this.getCurrentPlayer();
+        console.log("componentDidMount: (nIntervid is) : ", this.nIntervId);
+        console.log("player.timer.start: ", player.timer.start);
+        if (! this.nIntervId && player.timer.start ) {
+            // TODO: children
+            if(player.timer.status === Utils.PLAYER_STARTED) {
+                console.log("The timer is supposed to be started ...");
+                this.nIntervId = setInterval(() => {
+                    this.onUpdateTimer();
+                }, 1000);
+            } else if (player.timer.status === Utils.PLAYER_PAUSED) {
+                console.log("The timer is supposed to be paused ...");
+                this.onUpdateTimer();
+            } else  {
+                this.onUpdateTimer(); //charged player
+            }
+        }
+    }
 
     nIntervId = null;
 
