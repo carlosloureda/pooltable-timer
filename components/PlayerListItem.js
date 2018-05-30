@@ -9,7 +9,7 @@ import { connect } from 'react-redux'
 import { resetState } from '../actions/index'
 
 import {
-    playerStartTimer, playerPauseTimer, playerUpdateTimer, chargePlayer
+    playerStartTimer, playerPauseTimer, chargePlayer,
 } from '../actions/index';
 
 import { Utils } from '../utils/utils';
@@ -17,16 +17,23 @@ import { Utils } from '../utils/utils';
 class PlayerListItem extends Component {
 
 
+    state = {
+        timerCount: null,
+        timerCountFormatted: { hours: '00', minutes: '00', seconds: '00' },
+        paymentAmount: 0
+    }
+
     constructor(props) {
         super(props)
         this.onStartTimer = this.onStartTimer.bind(this);
         this.onPauseTimer = this.onPauseTimer.bind(this);
+        this.onUpdateTimer = this.onUpdateTimer.bind(this);
         this.onChargePlayer = this.onChargePlayer.bind(this);
     }
 
     // magic from outside :)
     componentDidUpdate(prevProps, prevState) {
-        const player = this.getPlayerById();
+        const player = this.getCurrentPlayer();
         const { timer, playerId } = this.props;
 
         let forcedStart = false;
@@ -57,29 +64,115 @@ class PlayerListItem extends Component {
 
     nIntervId = null;
 
-    getPlayerById = () => {
+    getCurrentPlayer = () => {
         const { playerId, players } = this.props;
         return players[playerId];
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+
+    isUserPaused = (id) => {
+        const { players } = this.props;
+        let pausesArrLength = players[id].timer.pauses.length;
+        if (pausesArrLength) {
+            return players[id].timer.pauses[pausesArrLength - 1].end ? false : true
+        }
+        return false;
+    }
+
+    getActivePlayersCount = () => {
+        let nPendingPlayers = 0;
+        for (userId of this.props.playersPendingPayment) {
+            nPendingPlayers += ! this.isUserPaused(userId) ? 1 : 0;
+        }
+        return nPendingPlayers;
+    }
+
+    calculate = () => {
+        const { timer } = this.props;
+        const player = this.getCurrentPlayer();
+        // if (player.timer.status !== Utils.PLAYER_CHARGED) {
+        const now = new Date().getTime();
+        let billableTimeOffset = (timer.status === Utils.PLAYER_STARTED) ? now - timer.lastEventTime : 0;
+        let activePlayersCount = this.getActivePlayersCount();
+        let totalBillable = (billableTimeOffset / activePlayersCount) + player.timer.billable;
+        //TODO: set price per hour from a place
+        let sigma = (4/(60*60*1000));
+        return parseFloat(totalBillable * sigma).toFixed(2);
+
+    };
+            ////////////////////////////////////////////////////////////////////
+    getPlayerTimerInfo = () => {
+        const player = this.getCurrentPlayer();
+        // if(!player) return null;
+        var now = new Date().getTime();
+        let totalCount = 0;
+        if (player.timer.pauses && player.timer.pauses.length) {
+            // desde start hasta primera pausa
+            totalCount = player.timer.pauses[0].init - player.timer.start;
+
+            // desde pausa ultima a start siguiente
+            for (let i = 0; i < player.timer.pauses.length; i++) {
+                if (i != player.timer.pauses.length - 1) { // no estamos en la ultima
+                    totalCount += player.timer.pauses[i + 1].init - player.timer.pauses[i].end;
+                }
+            }
+
+            // desde final ultima pausa hasta ahora
+            let lastPause = player.timer.pauses[player.timer.pauses.length - 1];
+            if (lastPause && lastPause.end) {
+                totalCount += now - lastPause.end;
+            }
+        } else { // no pauses
+            totalCount = now - player.timer.start;
+        }
+        return totalCount;
+    }
+
+    parseTime = (count) => {
+        let miliseconds = count % 1000;
+        let seconds = Math.floor(count  / 1000) % 60;
+        let minutes = Math.floor(count  / (1000 * 60)) % 60;
+        let hours = Math.floor(count  / (1000 * 60 * 60)) % 60;
+
+        miliseconds = (miliseconds < 10) ? '0' + miliseconds : miliseconds.toString();
+        seconds = (seconds < 10) ? '0' + seconds : seconds.toString();
+        minutes = (minutes < 10) ? '0' + minutes : minutes.toString();
+        hours = (hours < 10) ? '0' + hours : hours.toString();
+        return  {
+            hours, minutes, seconds
+        }
+    }
+    ////////////////////////////////////////////////////////////////////////////
+
+    onUpdateTimer = () => {
+
+        const totalTime = this.getPlayerTimerInfo();
+        this.setState({
+            timerCount: totalTime,
+            timerCountFormatted: this.parseTime(totalTime),
+            paymentAmount: this.calculate()
+        });
+    }
+
     onStartTimer = () => {
-        const player = this.getPlayerById(this.props.playerId);
+        const player = this.getCurrentPlayer();
         const now = new Date().getTime();
         this.props.playerStartTimer(player.id, now);
         this.nIntervId = setInterval(() => {
-            this.props.playerUpdateTimer(player.id, now);
+            this.onUpdateTimer();
         }, 1000);
     }
 
     onPauseTimer = () => {
-        const player = this.getPlayerById(this.props.playerId);
+        const player = this.getCurrentPlayer(this.props.playerId);
         const now = new Date().getTime();
         clearInterval(this.nIntervId);
         this.props.playerPauseTimer(player.id, now);
     }
 
     onChargePlayer = () => {
-        const player = this.getPlayerById(this.props.playerId);
+        const player = this.getCurrentPlayer(this.props.playerId);
         Alert.alert(
             '¿Seguro?',
             `¿Quieres cobrar y sacar de la partida a ${player.name}?`,
@@ -99,8 +192,8 @@ class PlayerListItem extends Component {
     }
 
     render() {
-        const player = this.getPlayerById()
-        const { countFormatted } = player.timer;
+        const player = this.getCurrentPlayer()
+        const { timerCount, timerCountFormatted, paymentAmount } = this.state;
         const playerCharged = player.timer.status === Utils.PLAYER_CHARGED;
         return (
 
@@ -139,13 +232,13 @@ class PlayerListItem extends Component {
                 <View style={styles.playerColumn2}>
                     <View style={styles.playerTime}>
                         <Text style={styles.timerCountPrimary}>
-                            { countFormatted.hours }:{ countFormatted.minutes }
+                            { timerCountFormatted.hours }:{ timerCountFormatted.minutes }
                         </Text>
                         <Text style={styles.timerCountSeconds}>
-                            { countFormatted.seconds }
+                            { timerCountFormatted.seconds }
                         </Text>
                     </View>
-                    <Text style={styles.playerMoney}>{player.money} €</Text>
+                    <Text style={styles.playerMoney}>{paymentAmount} €</Text>
                 </View>
 
             </View>
@@ -203,7 +296,8 @@ const styles = StyleSheet.create({
 function mapStateToProps(state) {
     return {
       players: state.players,
-      timer: state.timer
+      timer: state.timer,
+      playersPendingPayment: state.playersPendingPayment
     }
 }
 
@@ -211,7 +305,6 @@ function mapDispatchToProps (dispatch) {
     return {
         playerStartTimer: (id, time) => dispatch(playerStartTimer(id, time)),
         playerPauseTimer: (id, time) => dispatch(playerPauseTimer(id, time)),
-        playerUpdateTimer: (id, time) => dispatch(playerUpdateTimer(id, time)),
         chargePlayer: (id) => dispatch(chargePlayer(id)),
     }
 }

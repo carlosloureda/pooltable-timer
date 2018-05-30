@@ -1,10 +1,8 @@
 export const START_TIMER = "START_TIMER";
 export const PAUSE_TIMER = "PAUSE_TIMER";
-export const UPDATE_TIMER = "UPDATE_TIMER";
 export const RESET_TIMER = "RESET_TIMER";
 export const ADD_PLAYER = "ADD_PLAYER";
 
 export const PLAYER_START_TIMER = "PLAYER_START_TIMER";
 export const PLAYER_PAUSE_TIMER = "PLAYER_PAUSE_TIMER";
-export const PLAYER_UPDATE_TIMER = "PLAYER_UPDATE_TIMER";
 export const PLAYER_CHARGE = "PLAYER_CHARGE";

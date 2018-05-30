@@ -7,7 +7,7 @@ import { FontAwesome } from '@expo/vector-icons';
 
 import { connect } from 'react-redux'
 import {
-    startTimer, pauseTimer, updateTimer, resetTimer,
+    startTimer, pauseTimer, resetTimer,
     playerStartTimer, playerPauseTimer
 } from '../actions/index';
 
@@ -22,16 +22,71 @@ const CURRENCY_SYMBOL ="€";
 
 class TimerView extends Component {
 
+    state = {
+        count: 0,
+        countFormatted: {
+            hours: '00', minutes: '00', seconds: '00'
+        }
+    }
+
     constructor(props) {
         super(props)
         this.onStartTimer = this.onStartTimer.bind(this);
         this.onPauseTimer = this.onPauseTimer.bind(this);
+        this.onUpdateTimer = this.onUpdateTimer.bind(this);
     }
     nIntervId = null;
 
-    componentDidMount = () => {
-        // this.refs.circularProgress.performTimingAnimation(100, 8000, Easing.quad);
-        // this.props.resetTimer();
+
+
+    getTimerInfo = () => {
+        const { timer } = this.props;
+        var now = new Date().getTime();
+        let totalCount = 0;
+        if (timer.pauses && timer.pauses.length) {
+            // desde start hasta primera pausa
+            totalCount = timer.pauses[0].init - timer.start;
+
+            // desde pausa ultima a start siguiente
+            for (let i = 0; i < timer.pauses.length; i++) {
+                if (i != timer.pauses.length - 1) { // no estamos en la ultima
+                    totalCount += timer.pauses[i + 1].init - timer.pauses[i].end;
+                }
+            }
+
+            // desde final ultima pausa hasta ahora
+            let lastPause = timer.pauses[timer.pauses.length - 1];
+            if (lastPause && lastPause.end) {
+                totalCount += now - lastPause.end;
+            }
+        } else { // no pauses
+            totalCount = now - timer.start;
+        }
+        return totalCount;
+    }
+
+    parseTime = (count) => {
+        let miliseconds = count % 1000;
+        let seconds = Math.floor(count  / 1000) % 60;
+        let minutes = Math.floor(count  / (1000 * 60)) % 60;
+        let hours = Math.floor(count  / (1000 * 60 * 60)) % 60;
+
+        miliseconds = (miliseconds < 10) ? '0' + miliseconds : miliseconds.toString();
+        seconds = (seconds < 10) ? '0' + seconds : seconds.toString();
+        minutes = (minutes < 10) ? '0' + minutes : minutes.toString();
+        hours = (hours < 10) ? '0' + hours : hours.toString();
+        return  {
+            hours, minutes, seconds
+        }
+    }
+
+    onUpdateTimer = () => {
+
+        const totalCount = this.getTimerInfo();
+        this.setState({
+            count: totalCount,
+            countFormatted: this.parseTime(totalCount)
+        });
     }
 
     onStartTimer = () => {
@@ -41,9 +96,8 @@ class TimerView extends Component {
         playersArr.forEach((player) => {
             this.props.playerStartTimer(player.id, now);
         });
-
         this.nIntervId = setInterval(() => {
-            this.props.updateTimer();
+            this.onUpdateTimer();
         }, 1000);
     }
 
@@ -91,7 +145,8 @@ class TimerView extends Component {
     }
 
     render() {
-        const { status, countFormatted } = this.props.timer;
+        const { status } = this.props.timer;
+        const { countFormatted } = this.state;
         return(
             <View style={styles.timerWrapper}>
                 <View style={styles.timerButtons}>
@@ -229,7 +284,6 @@ function mapDispatchToProps (dispatch) {
     return {
         startTimer: (time) => dispatch(startTimer(time)),
         pauseTimer: (time) => dispatch(pauseTimer(time)),
-        updateTimer: () => dispatch(updateTimer()),
         resetTimer: () => dispatch(resetTimer()),
         playerStartTimer: (id, time) => dispatch(playerStartTimer(id, time)),
         playerPauseTimer: (id, time) => dispatch(playerPauseTimer(id, time)),
