@@ -4,7 +4,7 @@ import {
     START_TIMER, PAUSE_TIMER, UPDATE_TIMER,
     RESET_TIMER, ADD_PLAYER,
     PLAYER_START_TIMER, PLAYER_PAUSE_TIMER,
-    PLAYER_UPDATE_TIMER, PLAYER_CHARGE
+    PLAYER_CHARGE
 } from './types';
 
 //////////////////////////////
@@ -84,13 +84,6 @@ export function playerPauseTimer(id, time) {
         type: PLAYER_PAUSE_TIMER,
         playerId: id,
         time: time
-    }
-}
-
-export function playerUpdateTimer(id) {
-    return {
-        type: PLAYER_UPDATE_TIMER,
-        playerId: id
     }
 }
 

@@ -2,7 +2,7 @@ import {
     START_TIMER, PAUSE_TIMER,
     UPDATE_TIMER, RESET_TIMER, ADD_PLAYER,
     PLAYER_START_TIMER, PLAYER_PAUSE_TIMER,
-    PLAYER_UPDATE_TIMER, PLAYER_CHARGE
+    PLAYER_CHARGE
 } from '../actions/types';
 
 import {getStoredState} from 'redux-persist';
@@ -50,33 +50,6 @@ getTimerInfo = (state) => {
         }
     } else { // no pauses
         totalCount = now - state.timer.start;
-    }
-    return totalCount;
-}
-
-getPlayerTimerInfo = (state, playerId) => {
-    const player = state.players[playerId];
-    if(!player) return null;
-    var now = new Date().getTime();
-    let totalCount = 0;
-    if (player.timer.pauses && player.timer.pauses.length) {
-        // desde start hasta primera pausa
-        totalCount = player.timer.pauses[0].init - player.timer.start;
-
-        // desde pausa ultima a start siguiente
-        for (let i = 0; i < player.timer.pauses.length; i++) {
-            if (i != player.timer.pauses.length - 1) { // no estamos en la ultima
-                totalCount += player.timer.pauses[i + 1].init - player.timer.pauses[i].end;
-            }
-        }
-
-        // desde final ultima pausa hasta ahora
-        let lastPause = player.timer.pauses[player.timer.pauses.length - 1];
-        if (lastPause && lastPause.end) {
-            totalCount += now - lastPause.end;
-        }
-    } else { // no pauses
-        totalCount = now - player.timer.start;
     }
     return totalCount;
 }
@@ -237,9 +210,9 @@ function poolTable(state = defaultState, action) {
                             lastPause: null,
                             count: 0,
                             pauses: [],
-                            countFormatted: {
-                                hours: '00', minutes: '00', seconds: '00'
-                            },
+                            // countFormatted: {
+                            //     hours: '00', minutes: '00', seconds: '00'
+                            // },
                             billable: 0,
                             status: Utils.PLAYER_STOPPED,
                         }
@@ -312,35 +285,6 @@ function poolTable(state = defaultState, action) {
                                     end: null
                                 }
                             ])
-                        }
-                    }
-                }
-            }
-        case PLAYER_UPDATE_TIMER:
-            const t_actualCount = getPlayerTimerInfo(state, action.playerId);
-            previousPlayers = Object.assign({}, state.players);
-            now = new Date().getTime();
-            Object.values(previousPlayers).map((player) => {
-                if (player.timer.status !== Utils.PLAYER_CHARGED) {
-                    let billableTimeOffset = (player.timer.status === Utils.PLAYER_STARTED) ? now - getLastEventTime(state) : 0;
-                    let activePlayersCount = getActivePlayersCount(state);
-                    let totalBillable = (billableTimeOffset / activePlayersCount) + player.timer.billable;
-                    //TODO: set price per hour from a place
-                    let sigma = (4/(60*60*1000));
-                    player.money = parseFloat(totalBillable * sigma).toFixed(2);
-                }
-            });
-            return {
-                ...state,
-                players: {
-                    ...previousPlayers,
-                    [action.playerId]: {
-                        ...state.players[action.playerId],
-                        timer: {
-                            ...state.players[action.playerId].timer,
-                            count: t_actualCount,
-                            status: Utils.TIMER_STARTED,
-                            countFormatted: parseTime(t_actualCount),
                         }
                     }
                 }
