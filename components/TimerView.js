@@ -44,7 +44,6 @@ class TimerView extends Component {
         console.log("componentDidMount: (nIntervid is) : ", this.nIntervId);
         console.log("timer.start: ", timer.start);
         if (! this.nIntervId && timer.start ) {
-            // TODO: children
             if(timer.status === Utils.TIMER_STARTED) {
                 console.log("The timer is supposed to be started ...");
                 this.nIntervId = setInterval(() => {
@@ -171,7 +170,6 @@ class TimerView extends Component {
                             this.props.playerPauseTimer(player.id, now);
                         });
                         this.props.resetTimer();
-                        // TODO: reset children
                         this.setState({
                             count: 0,
                             countFormatted: {

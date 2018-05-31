@@ -28,7 +28,6 @@ const objectToArray = (object) => {
 /**
  * Converts an array into an object which keys are the key/id of an array
  * and the values the whole item in the array
- * TODO: make the id a field param
  * @param {object} object
  */
 const arrayToObject = (array) => {

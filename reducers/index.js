@@ -140,7 +140,6 @@ function poolTable(state = defaultState, action) {
          *  'Add chargableTime to the remaining users'
         */
         case ADD_PLAYER:
-            //TODO: Add 'chargable time to the remaining users'
             const id = action.id ? action.id : Utils.uid();
             now = new Date().getTime();
             previousPlayers = addTimeToActiveUsers(now, state);

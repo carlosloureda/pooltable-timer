@@ -66,7 +66,6 @@ class PlayerListItem extends Component {
         console.log("componentDidMount: (nIntervid is) : ", this.nIntervId);
         console.log("player.timer.start: ", player.timer.start);
         if (! this.nIntervId && player.timer.start ) {
-            // TODO: children
             if(player.timer.status === Utils.PLAYER_STARTED) {
                 console.log("The timer is supposed to be started ...");
                 this.nIntervId = setInterval(() => {
@@ -108,16 +107,14 @@ class PlayerListItem extends Component {
     }
 
     calculate = () => {
-        const { timer } = this.props;
+        const { timer, pricerPerMiliseconds } = this.props;
         const player = this.getCurrentPlayer();
         // if (player.timer.status !== Utils.PLAYER_CHARGED) {
         const now = new Date().getTime();
         let billableTimeOffset = (timer.status === Utils.PLAYER_STARTED) ? now - timer.lastEventTime : 0;
         let activePlayersCount = this.getActivePlayersCount();
         let totalBillable = (billableTimeOffset / activePlayersCount) + player.timer.billable;
-        //TODO: set price per hour from a place
-        let sigma = (4/(60*60*1000));
-        return parseFloat(totalBillable * sigma).toFixed(2);
+        return parseFloat(totalBillable * pricerPerMiliseconds).toFixed(2);
 
     };
             ////////////////////////////////////////////////////////////////////
@@ -362,7 +359,8 @@ function mapStateToProps(state) {
     return {
       players: state.players,
       timer: state.timer,
-      playersPendingPayment: state.playersPendingPayment
+      playersPendingPayment: state.playersPendingPayment,
+      pricerPerMiliseconds: state.pricerPerMiliseconds,
     }
 }
 
