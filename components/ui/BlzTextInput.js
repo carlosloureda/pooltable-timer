@@ -44,16 +44,17 @@ class BlzTextInput extends React.Component {
     }
     render() {
         const { filledOrFocused } = this.state;
+        const { placeholder, label } = this.props;
         return (
             <View>
-                {!!filledOrFocused && <Text style={ [styles.label, this.dynamicColorLabel()] }>Nombre</Text>}
+                {!!filledOrFocused && <Text style={ [styles.label, this.dynamicColorLabel()] }>{label}</Text>}
                 <TextInput
                     style={{height: 60, paddingHorizontal: 5, marginHorizontal: 20, fontSize: 20, color: 'green'}}
                     onChangeText={(text) => this.onChange(text)}
                     onBlur= {() => this.onBlur()}
                     onFocus= {() => this.onFocus()}
                     value={this.state.text}
-                    placeholder={filledOrFocused ? '' : 'Nombre'}
+                    placeholder={filledOrFocused ? '' : placeholder}
                     underlineColorAndroid = {this.state.textError ? 'red' : '#2a660c'}
                     // selectionColor = {'green'}
                 />

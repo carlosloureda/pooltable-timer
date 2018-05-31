@@ -2,13 +2,15 @@ import {
     START_TIMER, PAUSE_TIMER,
     RESET_TIMER, ADD_PLAYER,
     PLAYER_START_TIMER, PLAYER_PAUSE_TIMER,
-    PLAYER_CHARGE
+    PLAYER_CHARGE, SAVE_PRICE_PER_HOUR
 } from '../actions/types';
 
 import {getStoredState} from 'redux-persist';
 import { Utils } from '../utils/utils';
 const  timeUtils = require('../utils/time-utils');
 // use combien reducers
+
+const PRICE_PER_HOUR = 4;
 
 const defaultState = {
     timer: {
@@ -22,6 +24,8 @@ const defaultState = {
         lastEventTime: null,
         lastPLayerChargedId: null,
     },
+    pricePerHour: PRICE_PER_HOUR,
+    pricerPerMiliseconds: (PRICE_PER_HOUR/(60*60*1000)),
     players: {},
     playersPendingPayment: []
 }
@@ -121,6 +125,13 @@ function poolTable(state = defaultState, action) {
             }
         case RESET_TIMER:
             return defaultState;
+
+        case SAVE_PRICE_PER_HOUR:
+            return {
+                ...state,
+                pricePerHour: action.price,
+                pricerPerMiliseconds: (action.price/(60*60*1000))
+            }
 
         /**
          *  When adding new player:

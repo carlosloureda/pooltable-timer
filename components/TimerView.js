@@ -16,8 +16,6 @@ import {
 import { Utils } from '../utils/utils';
 const timeUtils = require('../utils/time-utils');
 
-const PRICE_PER_HOUR = 4;
-const PRICER_PER_MS = (PRICE_PER_HOUR/(60*60*1000));
 const CURRENCY_SYMBOL ="€";
 
 class TimerView extends Component {
@@ -187,8 +185,10 @@ class TimerView extends Component {
         );
     }
 
+
     getTotalPrice = () => {
-        return timeUtils.roundNumber(this.state.count * PRICER_PER_MS, 2);
+        const { pricerPerMiliseconds } = this.props;
+        return timeUtils.roundNumber(this.state.count * pricerPerMiliseconds, 2);
     }
 
     render() {
@@ -323,6 +323,7 @@ const styles = StyleSheet.create({
 function mapStateToProps(state) {
     return {
         timer: state.timer,
+        pricerPerMiliseconds: state.pricerPerMiliseconds,
         players: state.players,
     };
 }

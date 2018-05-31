@@ -4,7 +4,7 @@ import {
     START_TIMER, PAUSE_TIMER,
     RESET_TIMER, ADD_PLAYER,
     PLAYER_START_TIMER, PLAYER_PAUSE_TIMER,
-    PLAYER_CHARGE
+    PLAYER_CHARGE, SAVE_PRICE_PER_HOUR
 } from './types';
 
 //////////////////////////////
@@ -41,6 +41,16 @@ export function pauseTimer(time) {
 export function resetTimer() {
     return {
         type: RESET_TIMER
+    }
+}
+
+/*******************************************************************************
+ *                             SET TABLE PRICE
+ ******************************************************************************/
+export function setTablePrice(price) {
+    return {
+        type: SAVE_PRICE_PER_HOUR,
+        price: price
     }
 }
 

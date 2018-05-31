@@ -1,13 +1,14 @@
 import React from 'react';
 import {
   StyleSheet, Text, View, TouchableOpacity,
-  TouchableHighlight, Button, TextInput
+  TouchableHighlight, Button, TextInput, Image
 } from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 import TimerView from './TimerView';
 import PlayerList from './PlayerList';
+import Header from './Header';
 import BlzTextInput from './ui/BlzTextInput';
 
 import { connect } from 'react-redux'
@@ -16,6 +17,14 @@ import { Utils } from '../utils/utils';
 
 class TableTimerView extends React.Component {
 
+  static navigationOptions = ({ navigation }) => {
+    return {
+      header: <Header
+                navigation={navigation}
+              />
+    }
+  };
+
   constructor(props) {
     super(props)
     this.onPlayerNameChange = this.onPlayerNameChange.bind(this);
@@ -23,7 +32,8 @@ class TableTimerView extends React.Component {
 
   state = {
     addPlayerVisible: false,
-    playerName: null
+    playerName: null,
+    language: 'js'
   };
 
   toggleAddPlayerForm() {
@@ -51,11 +61,9 @@ class TableTimerView extends React.Component {
   }
 
   render() {
+    const { navigate } = this.props.navigation;
     return (
       <View style={styles.container}>
-        <View style={styles.header}>
-
-        </View>
         <View style={styles.mainTimer}>
           <TimerView />
           <View style={styles.extraButtons}>
@@ -69,7 +77,11 @@ class TableTimerView extends React.Component {
             <View style={styles.playerAdd}>
               <View style={styles.playerAddName}>
                 <BlzTextInput
-                  text={this.state.playerName} onChange={this.onPlayerNameChange}/>
+                  placeholder={'Nombre'}
+                  label={'Nombre'}
+                  text={this.state.playerName}
+                  onChange={this.onPlayerNameChange}
+                />
               </View>
               <TouchableOpacity
                 style={styles.playerAddBtn}
@@ -104,13 +116,7 @@ export default connect(mapStateToProps, mapDispatchToProps)(TableTimerView)
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    marginTop: 24,
-    backgroundColor: 'grey',
-  },
-  header: {
-    backgroundColor: 'grey',
-    height: 5
+    flex: 1
   },
   mainTimer: {
     backgroundColor: '#333333',
