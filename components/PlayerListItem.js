@@ -9,7 +9,8 @@ import { connect } from 'react-redux'
 import { resetState } from '../actions/index'
 
 import {
-    playerStartTimer, playerPauseTimer, chargePlayer,
+    playerStartTimer, playerPauseTimer, chargePlayer, startTimer,
+    pauseTimer
 } from '../actions/index';
 
 import { Utils } from '../utils/utils';
@@ -41,14 +42,14 @@ class PlayerListItem extends Component {
         let prevPlayer = prevProps.players[playerId];
         if (prevProps.timer.status != this.props.timer.status) {
 
-            forcedStart = this.props.timer.status === Utils.PLAYER_STARTED;
+            forcedStart = this.props.timer.status === Utils.TIMER_STARTED;
             if ( this.props.timer.status === Utils.PLAYER_STARTED ) {
                 console.log("[pListItem did update]: on forced start from timer: ", player.id);
-                this.onStartTimer();
+                this.onStartTimer(false);
                 //  FOr auto started players
             } else if(this.props.timer.status === Utils.PLAYER_PAUSED){
                 console.log("[pListItem did update]: on forced pause from timer: ", player.id);
-                this.onPauseTimer();
+                this.onPauseTimer(false);
             }
         }
     }
@@ -173,20 +174,62 @@ class PlayerListItem extends Component {
         });
     }
 
-    onStartTimer = () => {
+    /* Only allow start player timer when global timer is running. If only one
+    player both buttons (player and timer) should do the same work
+    isUiEvent: Used for understanding if action comes from user click or not
+    */
+    onStartTimer = (isUiEvent) => {
         const player = this.getCurrentPlayer();
         const now = new Date().getTime();
-        this.props.playerStartTimer(player.id, now);
-        this.nIntervId = setInterval(() => {
-            this.onUpdateTimer();
-        }, 1000);
+        const { players, startGeneralTimer, timer } = this.props;
+        let startTimerAllowed = true;
+
+        if ( Object.values(players).length === 1 ) {
+            startGeneralTimer(now);
+        } else if(timer.status !== Utils.TIMER_STARTED && isUiEvent) {
+            startTimerAllowed = false;
+            Alert.alert(
+                'No se puede realizar esta acción',
+                `Inicia el tiempo de la mesa para poder gestionar los tiempos de cada jugador en la mesa.`,
+                [{
+                    text: '¡Vale!', style: 'success'
+                }]
+            )
+        }
+        if (startTimerAllowed) {
+            this.props.playerStartTimer(player.id, now);
+            this.nIntervId = setInterval(() => {
+                this.onUpdateTimer();
+            }, 1000);
+        }
     }
 
-    onPauseTimer = () => {
+    /* Only allow pause player timer when global timer is not running. If only one
+    player both buttons (player and timer) should do the same work
+    isUiEvent: Used for understanding if action comes from user click or not
+    */
+    onPauseTimer = (isUiEvent) => {
         const player = this.getCurrentPlayer(this.props.playerId);
         const now = new Date().getTime();
-        clearInterval(this.nIntervId);
-        this.props.playerPauseTimer(player.id, now);
+        const { players, pauseGeneralTimer, timer } = this.props;
+        let pauseTimerAllowed = true;
+
+        if ( Object.values(players).length === 1 ) {
+            pauseGeneralTimer(now);
+        } else if(timer.status !== Utils.TIMER_STARTED && isUiEvent) {
+            pauseTimerAllowed = false;
+            Alert.alert(
+                'No se puede realizar esta acción',
+                `Inicia el tiempo de la mesa para poder gestionar los tiempos de cada jugador en la mesa.`,
+                [{
+                    text: '¡Vale!', style: 'success'
+                }]
+            )
+        }
+        if (pauseTimerAllowed) {
+            clearInterval(this.nIntervId);
+            this.props.playerPauseTimer(player.id, now);
+        }
     }
 
     onChargePlayer = () => {
@@ -211,6 +254,7 @@ class PlayerListItem extends Component {
 
     render() {
         const player = this.getCurrentPlayer()
+        const { timer } = this.props;
         const { timerCount, timerCountFormatted, paymentAmount } = this.state;
         const playerCharged = player.timer.status === Utils.PLAYER_CHARGED;
         return (
@@ -220,13 +264,16 @@ class PlayerListItem extends Component {
                     <Text style={styles.playerName}>{player.name}</Text>
                     { ! playerCharged &&
                         <View style={styles.playerButtons}>
+
+                            {/* { timer.status !== Utils.TIMER_STOPPED && player.timer.status !== Utils.PLAYER_STARTED && */}
                             { player.timer.status !== Utils.PLAYER_STARTED &&
-                                <TouchableOpacity onPress={this.onStartTimer}>
+                                <TouchableOpacity onPress={() => this.onStartTimer(true)}>
                                     <FontAwesome name='play' size={25} color={ blue } />
                                 </TouchableOpacity>
                             }
+                            {/* { timer.status !== Utils.TIMER_STOPPED && player.timer.status === Utils.PLAYER_STARTED && */}
                             { player.timer.status === Utils.PLAYER_STARTED &&
-                                <TouchableOpacity onPress={this.onPauseTimer}>
+                                <TouchableOpacity onPress={() => this.onPauseTimer(true)}>
                                     <FontAwesome name='pause' size={25} color={ lightGrey } />
                                 </TouchableOpacity>
                             }
@@ -324,6 +371,8 @@ function mapDispatchToProps (dispatch) {
         playerStartTimer: (id, time) => dispatch(playerStartTimer(id, time)),
         playerPauseTimer: (id, time) => dispatch(playerPauseTimer(id, time)),
         chargePlayer: (id) => dispatch(chargePlayer(id)),
+        startGeneralTimer: (time) => dispatch(startTimer(time)),
+        pauseGeneralTimer: (time) => dispatch(pauseTimer(time)),
     }
 }
 

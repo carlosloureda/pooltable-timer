@@ -34,7 +34,7 @@ class TableTimerView extends React.Component {
     const id = Utils.uid();
     this.props.addNewPlayer(this.state.playerName, id);
     //TODO:  Add remaining time to remaining players
-    if (this.props.timer.status === Utils.PLAYER_STARTED) {
+    if (this.props.timer.status === Utils.TIMER_STARTED) {
       this.props.playerStartTimer(id, new Date().getTime())
     }
     this.setState({

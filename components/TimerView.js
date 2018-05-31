@@ -61,6 +61,24 @@ class TimerView extends Component {
         // this.props.resetTimer();
     }
 
+    // when children wants to force update on parent (ex. when one child and we
+    // play the start/pause on the child we want child and parent timer start)
+    componentDidUpdate(prevProps, prevState) {
+        if(prevProps.timer.status !== this.props.timer.status ) {
+            console.log("BBBBB : ", this.props.timer.status);
+            console.log("this.nIntervId : ", this.nIntervId);
+            if (this.props.timer.status !== Utils.TIMER_PAUSED) {
+                console.log("NNNN");
+                this.nIntervId = setInterval(() => {
+                    this.onUpdateTimer();
+                }, 1000);
+            } else if (this.props.timer.status === Utils.TIMER_PAUSED) {
+                console.log("NNNN 222");
+                clearInterval(this.nIntervId);
+            }
+        }
+    }
+
     getTimerInfo = () => {
         const { timer } = this.props;
         var now = new Date().getTime();
