@@ -228,10 +228,10 @@ class PlayerListItem extends Component {
     onPauseTimer = (isUiEvent) => {
         const player = this.getCurrentPlayer(this.props.playerId);
         const now = new Date().getTime();
-        const { players, pauseGeneralTimer, timer } = this.props;
+        const { players, pauseGeneralTimer, timer, playersPendingPayment } = this.props;
         let pauseTimerAllowed = true;
 
-        if ( Object.values(players).length === 1 ) {
+        if ( Object.values(players).length === 1 || this.getActivePlayersCount() === 1) {
             pauseGeneralTimer(now);
         } else if(timer.status !== Utils.TIMER_STARTED && isUiEvent) {
             pauseTimerAllowed = false;
