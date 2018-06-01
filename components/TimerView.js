@@ -32,8 +32,23 @@ class TimerView extends Component {
         this.onStartTimer = this.onStartTimer.bind(this);
         this.onPauseTimer = this.onPauseTimer.bind(this);
         this.onUpdateTimer = this.onUpdateTimer.bind(this);
+        this.initTimer = this.initTimer.bind(this);
+        this.stopTimer = this.stopTimer.bind(this);
     }
+
     nIntervId = null;
+
+    initTimer = () => {
+        if (! this.nIntervId) {
+            this.nIntervId = setInterval(() => {
+                this.onUpdateTimer();
+            }, 1000);
+        }
+    }
+    stopTimer = () => {
+        clearInterval(this.nIntervId);
+        this.nIntervId = null;
+    }
 
     /**
      * We want to keep track of time even when app is closed!
@@ -41,14 +56,10 @@ class TimerView extends Component {
      */
     componentDidMount = () => {
         const { timer } = this.props;
-        console.log("componentDidMount: (nIntervid is) : ", this.nIntervId);
-        console.log("timer.start: ", timer.start);
         if (! this.nIntervId && timer.start ) {
             if(timer.status === Utils.TIMER_STARTED) {
                 console.log("The timer is supposed to be started ...");
-                this.nIntervId = setInterval(() => {
-                    this.onUpdateTimer();
-                }, 1000);
+                this.initTimer();
             } else if (timer.status === Utils.TIMER_PAUSED) {
                 console.log("The timer is supposed to be paused ...");
                 this.onUpdateTimer();
@@ -62,16 +73,15 @@ class TimerView extends Component {
     // play the start/pause on the child we want child and parent timer start)
     componentDidUpdate(prevProps, prevState) {
         if(prevProps.timer.status !== this.props.timer.status ) {
-            console.log("BBBBB : ", this.props.timer.status);
-            console.log("this.nIntervId : ", this.nIntervId);
-            if (this.props.timer.status !== Utils.TIMER_PAUSED) {
-                console.log("NNNN");
-                this.nIntervId = setInterval(() => {
-                    this.onUpdateTimer();
-                }, 1000);
-            } else if (this.props.timer.status === Utils.TIMER_PAUSED) {
-                console.log("NNNN 222");
-                clearInterval(this.nIntervId);
+            // console.log("[TIMERVIEW] this.props.timer.status : ", this.props.timer.status);
+            // console.log("[TIMERVIEW] this.nIntervId : ", this.nIntervId);
+            if (this.props.timer.status === Utils.TIMER_STARTED) {
+                console.log("[TIMERVIEW] Not paused");
+                this.initTimer();
+            }
+            else if (this.props.timer.status !== Utils.TIMER_STARTED) {
+                console.log("[TIMERVIEW] Paused");
+                this.stopTimer()
             }
         }
     }
@@ -118,7 +128,6 @@ class TimerView extends Component {
     }
 
     onUpdateTimer = () => {
-
         const totalCount = this.getTimerInfo();
         this.setState({
             count: totalCount,
@@ -133,23 +142,17 @@ class TimerView extends Component {
         playersArr.forEach((player) => {
             this.props.playerStartTimer(player.id, now);
         });
-        this.nIntervId = setInterval(() => {
-            this.onUpdateTimer();
-        }, 1000);
+        this.initTimer();
     }
 
     onPauseTimer = () => {
         const now = new Date().getTime();
-        clearInterval(this.nIntervId);
+        this.stopTimer();
         this.props.pauseTimer(now);
         const playersArr = Utils.objectToArray(this.props.players);
         playersArr.forEach((player) => {
             this.props.playerPauseTimer(player.id, now);
         });
-    }
-
-    stopTimer = () => {
-
     }
 
     resetTimer = () => {
@@ -162,20 +165,22 @@ class TimerView extends Component {
                 },
                 {
                     text: 'Sí, reinicia.', onPress: () => {
+                        // console.log(">>>> RESTARTING!!!!!");
                         const playersArr = Utils.objectToArray(this.props.players);
                         const now = new Date().getTime();
-                        clearInterval(this.nIntervId);
+
                         this.props.pauseTimer(now);
+                        this.props.resetTimer();
+                        this.stopTimer();
                         playersArr.forEach((player) => {
                             this.props.playerPauseTimer(player.id, now);
                         });
-                        this.props.resetTimer();
                         this.setState({
                             count: 0,
                             countFormatted: {
                                 hours: '00', minutes: '00', seconds: '00'
                             }
-                        })
+                        });
                     }
                 },
             ],
@@ -186,6 +191,8 @@ class TimerView extends Component {
 
     getTotalPrice = () => {
         const { pricerPerMiliseconds } = this.props;
+        // console.log("[TIMERVIEWS getTotalPrice()] this.state.count: ", this.state.count);
+        // console.log("[TIMERVIEWS getTotalPrice()] pricerPerMiliseconds: ", pricerPerMiliseconds);
         return timeUtils.roundNumber(this.state.count * pricerPerMiliseconds, 2);
     }
 

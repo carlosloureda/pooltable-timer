@@ -30,6 +30,20 @@ class PlayerListItem extends Component {
         this.onPauseTimer = this.onPauseTimer.bind(this);
         this.onUpdateTimer = this.onUpdateTimer.bind(this);
         this.onChargePlayer = this.onChargePlayer.bind(this);
+        this.initTimer = this.initTimer.bind(this);
+        this.stopTimer = this.stopTimer.bind(this);
+    }
+
+    initTimer = () => {
+        if (! this.nIntervId) {
+            this.nIntervId = setInterval(() => {
+                this.onUpdateTimer();
+            }, 1000);
+        }
+    }
+    stopTimer = () => {
+        clearInterval(this.nIntervId);
+        this.nIntervId = null;
     }
 
     // magic from outside :)
@@ -68,9 +82,7 @@ class PlayerListItem extends Component {
         if (! this.nIntervId && player.timer.start ) {
             if(player.timer.status === Utils.PLAYER_STARTED) {
                 console.log("The timer is supposed to be started ...");
-                this.nIntervId = setInterval(() => {
-                    this.onUpdateTimer();
-                }, 1000);
+                this.initTimer();
             } else if (player.timer.status === Utils.PLAYER_PAUSED) {
                 console.log("The timer is supposed to be paused ...");
                 this.onUpdateTimer();
@@ -120,10 +132,10 @@ class PlayerListItem extends Component {
           result
         */
         let totalBillable = (billableTimeOffset ? billableTimeOffset / activePlayersCount : billableTimeOffset) + player.timer.billable;
-        console.log("billableTimeOffset: ", billableTimeOffset);
-        console.log("activePlayersCount: ", activePlayersCount);
-        console.log("player.timer.billable: ", player.timer.billable);
-        console.log("totalBillable: ", totalBillable);
+        // console.log("billableTimeOffset: ", billableTimeOffset);
+        // console.log("activePlayersCount: ", activePlayersCount);
+        // console.log("player.timer.billable: ", player.timer.billable);
+        // console.log("totalBillable: ", totalBillable);
         return parseFloat(totalBillable * pricerPerMiliseconds).toFixed(2);
 
     };
@@ -205,9 +217,7 @@ class PlayerListItem extends Component {
         }
         if (startTimerAllowed) {
             this.props.playerStartTimer(player.id, now);
-            this.nIntervId = setInterval(() => {
-                this.onUpdateTimer();
-            }, 1000);
+            this.initTimer();
         }
     }
 
@@ -234,7 +244,7 @@ class PlayerListItem extends Component {
             )
         }
         if (pauseTimerAllowed) {
-            clearInterval(this.nIntervId);
+            this.stopTimer();
             this.props.playerPauseTimer(player.id, now);
         }
     }
@@ -250,7 +260,7 @@ class PlayerListItem extends Component {
                 },
                 {
                     text: 'Sí, ¡cobremos!.', onPress: () => {
-                        clearInterval(this.nIntervId);
+                        this.stopTimer();
                         this.props.chargePlayer(player.id)
                     }
                 },
