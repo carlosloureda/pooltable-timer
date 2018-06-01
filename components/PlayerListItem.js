@@ -113,7 +113,17 @@ class PlayerListItem extends Component {
         const now = new Date().getTime();
         let billableTimeOffset = (timer.status === Utils.PLAYER_STARTED) ? now - timer.lastEventTime : 0;
         let activePlayersCount = this.getActivePlayersCount();
-        let totalBillable = (billableTimeOffset / activePlayersCount) + player.timer.billable;
+
+        /*
+          if we are restarting a paused game activePlayers are paused and timer
+          is paused and time is 0 we would be dividing between 0 and NaN would
+          result
+        */
+        let totalBillable = (billableTimeOffset ? billableTimeOffset / activePlayersCount : billableTimeOffset) + player.timer.billable;
+        console.log("billableTimeOffset: ", billableTimeOffset);
+        console.log("activePlayersCount: ", activePlayersCount);
+        console.log("player.timer.billable: ", player.timer.billable);
+        console.log("totalBillable: ", totalBillable);
         return parseFloat(totalBillable * pricerPerMiliseconds).toFixed(2);
 
     };

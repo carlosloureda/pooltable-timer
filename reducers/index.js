@@ -142,7 +142,9 @@ function poolTable(state = defaultState, action) {
         case ADD_PLAYER:
             const id = action.id ? action.id : Utils.uid();
             now = new Date().getTime();
-            previousPlayers = addTimeToActiveUsers(now, state);
+            if (state.timer.status === Utils.TIMER_STARTED) {
+                previousPlayers = addTimeToActiveUsers(now, state);
+            }
 
             return {
                 ...state,
