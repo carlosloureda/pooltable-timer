@@ -8,7 +8,6 @@ import { createStackNavigator } from 'react-navigation';
 import LoadingView from './components/ui/LoadingView';
 import TableTimerView from './components/TableTimerView';
 import SettingsView from './components/SettingsView';
-import Header from './components/Header';
 
 import { StyleSheet, View } from 'react-native';
 
@@ -26,7 +25,7 @@ export default class App extends React.Component {
     persistor.purge();
   }
   render() {
-    // this.resetLocalStorage()
+    this.resetLocalStorage()
     return (
       <Provider store={store}>
         {/* the loading and persistor props are both required! */}

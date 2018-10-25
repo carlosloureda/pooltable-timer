@@ -4,7 +4,8 @@ import {
     START_TIMER, PAUSE_TIMER,
     RESET_TIMER, ADD_PLAYER,
     PLAYER_START_TIMER, PLAYER_PAUSE_TIMER,
-    PLAYER_CHARGE, SAVE_PRICE_PER_HOUR
+    PLAYER_CHARGE, SAVE_PRICE_PER_HOUR,
+    PLAYERS_PAUSE_TIMER_ONE, PLAYERS_PAUSE_TIMER_TWO
 } from './types';
 
 //////////////////////////////
@@ -82,6 +83,30 @@ export function playerPauseTimer(id, time) {
         type: PLAYER_PAUSE_TIMER,
         playerId: id,
         time: time
+    }
+}
+
+/* Pause the timers for players */
+function pausePlayersPartOne(time) {
+    return {
+        type: PLAYERS_PAUSE_TIMER_ONE,
+        time: time
+    }
+}
+
+/* set times for the paused players*/
+function pausePlayersPartTwo(time) {
+    return {
+        type: PLAYERS_PAUSE_TIMER_TWO,
+        time: time
+    }
+}
+
+export function playersPauseTimer(time) {
+    return (dispatch) => {
+        dispatch(pausePlayersPartOne(time))
+        return dispatch(pausePlayersPartTwo(time))
+
     }
 }
 
