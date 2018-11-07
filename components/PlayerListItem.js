@@ -123,7 +123,11 @@ class PlayerListItem extends Component {
         const player = this.getCurrentPlayer();
         // if (player.timer.status !== Utils.PLAYER_CHARGED) {
         const now = new Date().getTime();
-        let billableTimeOffset = (timer.status === Utils.PLAYER_STARTED) ? now - timer.lastEventTime : 0;
+        // console.log("now: ", now);
+        // console.log("timer.lastEventTime: ", timer.lastEventTime);
+        let initTime = timer.lastEventTime ? timer.lastEventTime  : timer.start;
+        // console.log("initTime: ", initTime);
+        let billableTimeOffset = (timer.status === Utils.PLAYER_STARTED) ? now - initTime : 0;
         let activePlayersCount = this.getActivePlayersCount();
 
         /*
@@ -132,10 +136,16 @@ class PlayerListItem extends Component {
           result
         */
         let totalBillable = (billableTimeOffset ? billableTimeOffset / activePlayersCount : billableTimeOffset) + player.timer.billable;
+        // console.log("**************************************************");
+        // console.log("==================================================");
+        // console.log("player name: ", player.name);
         // console.log("billableTimeOffset: ", billableTimeOffset);
         // console.log("activePlayersCount: ", activePlayersCount);
         // console.log("player.timer.billable: ", player.timer.billable);
         // console.log("totalBillable: ", totalBillable);
+        // console.log("pricerPerMiliseconds: ", pricerPerMiliseconds);
+        // console.log("parseFloat(totalBillable * pricerPerMiliseconds).toFixed(2): ", parseFloat(totalBillable * pricerPerMiliseconds).toFixed(2));
+        // console.log("==================================================");
         return parseFloat(totalBillable * pricerPerMiliseconds).toFixed(2);
 
     };
