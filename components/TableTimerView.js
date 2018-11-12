@@ -60,7 +60,6 @@ class TableTimerView extends React.Component {
   }
 
   render() {
-    const { navigate } = this.props.navigation;
     return (
       <View style={styles.container}>
         <View style={styles.mainTimer}>
@@ -123,7 +122,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row'
   },
   players: {
-    backgroundColor: 'yellow',
+    backgroundColor: '#E5E5E5',
     flex: 1,
     marginTop: 5
   },

@@ -2,12 +2,11 @@ import {
     START_TIMER, PAUSE_TIMER,
     RESET_TIMER, ADD_PLAYER,
     PLAYER_START_TIMER, PLAYER_PAUSE_TIMER,
-    PLAYER_CHARGE, SAVE_PRICE_PER_HOUR
+    PLAYER_CHARGE, SAVE_PRICE_PER_HOUR,
+    PLAYERS_PAUSE_TIMER_ONE, PLAYERS_PAUSE_TIMER_TWO
 } from '../actions/types';
 
-import {getStoredState} from 'redux-persist';
 import { Utils } from '../utils/utils';
-const  timeUtils = require('../utils/time-utils');
 // use combien reducers
 
 const PRICE_PER_HOUR = 4;
@@ -23,12 +22,44 @@ const defaultState = {
         status: Utils.TIMER_STOPPED,
         lastEventTime: null,
         lastPLayerChargedId: null,
+        /* events: [ //log
+            {
+                eventType: 'addPlayer',
+                playersCount: 0,
+                activePlayersCount: 0,
+
+            }
+        ]
+        */
     },
     pricePerHour: PRICE_PER_HOUR,
     pricerPerMiliseconds: (PRICE_PER_HOUR/(60*60*1000)),
     players: {},
     playersPendingPayment: []
 }
+
+/*
+
+"id": "b921f3ec166a715c457
+"money": 0,
+"name": "J1",
+"time": 1540401513562,
+"timer": Object {
+  "billable": 0,
+  "count": 0,
+  "end": null,
+  "lastPause": null,
+  "lastPauseCount": null,
+  "pauses": Array [
+    Object {
+      "end": 1540401542419
+      "init": 154040154067
+    },
+  ],
+  "start": 1540401523890,
+  "status": 2,
+},
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -43,6 +74,11 @@ const isUserPaused = (id, state) => {
         return state.players[id].timer.pauses[pausesArrLength - 1].end ? false : true
     }
     return false;
+}
+
+const isActivePlayer = (id, state) => {
+    let userStopped = state.players[id].timer.status === Utils.PLAYER_STOPPED ? true : false;
+    return ! userStopped && ! isUserPaused(id, state);
 }
 
 /**
@@ -61,7 +97,7 @@ const getActivePlayersCount = (state) => {
  * seek for the latest event time, a user entry, a user exit or a pause
  */
 // const getLastEventTime = () => Math.max(entryTime, chargedTime, userPauseTime);
-const getLastEventTime = (state) => state.timer.lastEventTime;
+const getLastEventTime = (state) => state.timer.lastEventTime ? state.timer.lastEventTime : state.timer.start;
 
 /**
  * Adds the billable time to the active users,
@@ -71,13 +107,19 @@ const getLastEventTime = (state) => state.timer.lastEventTime;
 const addTimeToActiveUsers = (nowTime, state) => {
         // calculate time from now to last event entry
     let lastTime = getLastEventTime(state);
+    // console.log("lastTime: ", lastTime)
     let activePlayersCount = getActivePlayersCount(state);
+    // console.log("activePlayersCount: ", activePlayersCount)
     let timeToBill = activePlayersCount ? (nowTime - lastTime) / activePlayersCount : 0;
+    // console.log("timeToBill: ", timeToBill)
     const players = Object.assign({}, state.players);
+    // console.log("players: ", players)
 
     for (userId of state.playersPendingPayment) {
         let user = players[userId];
-        if (! isUserPaused(user.id, state)) {
+        // console.log("user: ", user.id)
+        if (isActivePlayer(user.id, state)) {
+            // console.log("is !paused, timeToBill: ", timeToBill, " user.timer.billable: ", user.timer.billable)
             user.timer.billable += timeToBill;
         }
     };
@@ -90,6 +132,8 @@ const addTimeToActiveUsers = (nowTime, state) => {
 function poolTable(state = defaultState, action) {
     let pausesObj = null;
     let now = null;
+    let previousPlayers = [];
+    let _players = {}
 
     switch (action.type) {
         case START_TIMER:
@@ -142,16 +186,16 @@ function poolTable(state = defaultState, action) {
         case ADD_PLAYER:
             const id = action.id ? action.id : Utils.uid();
             now = new Date().getTime();
-            if (state.timer.status === Utils.TIMER_STARTED) {
-                previousPlayers = addTimeToActiveUsers(now, state);
-            }
+           // if (state.timer.status === Utils.TIMER_STARTED) {
+            previousPlayers = addTimeToActiveUsers(now, state);
+            //}
 
-            return {
+            let _a =  {
                 ...state,
                 playersPendingPayment: state.playersPendingPayment.concat([id]),
                 timer: {
                     ...state.timer,
-                    lastEventTime: now,
+                    lastEventTime: state.timer.start ? now : null,
                 },
                 players: {
                     ...previousPlayers,
@@ -173,9 +217,19 @@ function poolTable(state = defaultState, action) {
                     }
                 }
             };
+            // console.log("ADD PLAYER: ", _a);
+            return _a
 
         case PLAYER_START_TIMER:
             console.log("PLAYER_START_TIMER");
+
+            console.log(`Player ${action.playerId}` );
+            console.log("Time: ", state.players[action.playerId].time);
+            console.log("Billable: ", state.players[action.playerId].timer.billable);
+            console.log("Count: ", state.players[action.playerId].timer.count);
+            console.log("---------------------------------------------");
+
+
             previousPlayers = state.players;
             if (state.players[action.playerId].timer.status === Utils.PLAYER_CHARGED) {
                 // protection for global restart from pause
@@ -242,6 +296,45 @@ function poolTable(state = defaultState, action) {
                         }
                     }
                 }
+            }
+
+        case PLAYERS_PAUSE_TIMER_ONE:
+            console.log("Pausing players: ")
+            Object.entries(state.players).forEach(
+                ([key, value]) => {
+                    state.players[key].timer.status = state.players[key].timer.status === Utils.PLAYER_CHARGED ? Utils.PLAYER_CHARGED : Utils.PLAYER_PAUSED;
+                    console.log(`Player ${key}` );
+                    console.log("Time: ", value.time);
+                    console.log("Billable: ", value.timer.billable);
+                    console.log("Count: ", value.timer.count);
+                    console.log("---------------------------------------------");
+
+                    if (state.players[key].timer.status !== Utils.PLAYER_CHARGED) {
+                        state.players[key].timer.pauses = state.players[key].timer.pauses.concat([
+                            {
+                                init: action.time,
+                                end: null
+                            }
+                        ])
+                    }
+                    _players[key] = state.players[key]
+                }
+            );
+            return {
+                ...state,
+                timer: {
+                    ...state.timer,
+                    lastEventTime: action.time
+                },
+                players: _players
+            }
+        case PLAYERS_PAUSE_TIMER_TWO:
+            // console.log("-> 2. Second part of pausing players");
+            _players = addTimeToActiveUsers(action.time, state);
+            // console.log("_players: ", _players)
+            return {
+                ...state,
+                players: _players
             }
         case PLAYER_CHARGE:
             now = new Date().getTime();

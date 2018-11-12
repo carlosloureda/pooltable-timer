@@ -8,7 +8,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { connect } from 'react-redux'
 import {
     startTimer, pauseTimer, resetTimer,
-    playerStartTimer, playerPauseTimer
+    playerStartTimer, playersPauseTimer
 } from '../actions/index';
 
 // import { AnimatedCircularProgress } from 'react-native-circular-progress';
@@ -149,10 +149,10 @@ class TimerView extends Component {
         const now = new Date().getTime();
         this.stopTimer();
         this.props.pauseTimer(now);
+        console.log("this.props.players: ", this.props.players)
         const playersArr = Utils.objectToArray(this.props.players);
-        playersArr.forEach((player) => {
-            this.props.playerPauseTimer(player.id, now);
-        });
+        console.log("playersArr: ", playersArr)        
+        this.props.playersPauseTimer(now);        
     }
 
     resetTimer = () => {
@@ -172,9 +172,7 @@ class TimerView extends Component {
                         this.props.pauseTimer(now);
                         this.props.resetTimer();
                         this.stopTimer();
-                        playersArr.forEach((player) => {
-                            this.props.playerPauseTimer(player.id, now);
-                        });
+                        this.props.playersPauseTimer(now);
                         this.setState({
                             count: 0,
                             countFormatted: {
@@ -339,7 +337,7 @@ function mapDispatchToProps (dispatch) {
         pauseTimer: (time) => dispatch(pauseTimer(time)),
         resetTimer: () => dispatch(resetTimer()),
         playerStartTimer: (id, time) => dispatch(playerStartTimer(id, time)),
-        playerPauseTimer: (id, time) => dispatch(playerPauseTimer(id, time)),
+        playersPauseTimer: (time) => dispatch(playersPauseTimer(time)),
     }
 }
 

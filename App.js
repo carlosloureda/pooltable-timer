@@ -8,7 +8,6 @@ import { createStackNavigator } from 'react-navigation';
 import LoadingView from './components/ui/LoadingView';
 import TableTimerView from './components/TableTimerView';
 import SettingsView from './components/SettingsView';
-import Header from './components/Header';
 
 import { StyleSheet, View } from 'react-native';
 
