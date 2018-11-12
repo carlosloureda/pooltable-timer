@@ -279,6 +279,29 @@ class PlayerListItem extends Component {
         );
     }
 
+    /* Dynamic styles */
+    playerStyle = (player) => {
+
+        const orangeColor ="#f2a10c";
+        const redColor ="#fc052a";
+        const greenColor ="#3b9607";
+
+        let color = "white";
+
+        if( player.timer.status === Utils.PLAYER_STARTED ) {
+            color = greenColor;
+        } else if( player.timer.status === Utils.PLAYER_PAUSED ) {
+            color = orangeColor;
+        } else if( player.timer.status === Utils.PLAYER_CHARGED ) {
+            // color = redColor;
+        }
+        return {
+            backgroundColor: color,
+            height: 100,
+            flexDirection: 'row'
+        }
+    }
+
     render() {
         const player = this.getCurrentPlayer()
         const { timer } = this.props;
@@ -286,7 +309,8 @@ class PlayerListItem extends Component {
         const playerCharged = player.timer.status === Utils.PLAYER_CHARGED;
         return (
 
-            <View style={styles.player}>
+            <View style={this.playerStyle(player)}>
+            {/* <View style={styles.player}> */}
                 <View style={styles.playerColumn1}>
                     <Text style={styles.playerName}>{player.name}</Text>
                     { ! playerCharged &&
@@ -294,17 +318,23 @@ class PlayerListItem extends Component {
 
                             {/* { timer.status !== Utils.TIMER_STOPPED && player.timer.status !== Utils.PLAYER_STARTED && */}
                             { player.timer.status !== Utils.PLAYER_STARTED &&
-                                <TouchableOpacity onPress={() => this.onStartTimer(true)}>
+                                <TouchableOpacity
+                                    style={styles.playButtonWrapper}
+                                >
                                     <FontAwesome name='play' size={25} color={ blue } />
                                 </TouchableOpacity>
                             }
                             {/* { timer.status !== Utils.TIMER_STOPPED && player.timer.status === Utils.PLAYER_STARTED && */}
                             { player.timer.status === Utils.PLAYER_STARTED &&
-                                <TouchableOpacity onPress={() => this.onPauseTimer(true)}>
+                                <TouchableOpacity
+                                    onPress={() => this.onPauseTimer(true)}
+                                >
                                     <FontAwesome name='pause' size={25} color={ lightGrey } />
                                 </TouchableOpacity>
                             }
-                            <TouchableOpacity onPress={this.onChargePlayer}>
+                            <TouchableOpacity
+                                onPress={this.onChargePlayer}
+                            >
                                 <FontAwesome name='euro' size={25} color={ gold } />
                             </TouchableOpacity>
                             {/* <TouchableOpacity>
@@ -316,8 +346,8 @@ class PlayerListItem extends Component {
                         </View>
                     }
                     { !! playerCharged &&
-                        <View style={styles.playerButtons}>
-                            <Text>Cobrado</Text>
+                        <View style={styles.playerChargedRow}>
+                            <Text style={{color: 'red'}}>Cobrado</Text>
                         </View>
                     }
                 </View>
@@ -371,7 +401,8 @@ const styles = StyleSheet.create({
     timerCountSeconds: {
         paddingLeft: 5,
         fontSize: 15,
-        color: '#999'
+        // color: '#999'
+        color: '#dadada'
     },
     playerMoney: {
         fontSize: 20,
@@ -382,6 +413,11 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-around'
     },
+    playerChargedRow: {
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        paddingLeft: 15
+    }
 
 });
 
