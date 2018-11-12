@@ -26,8 +26,8 @@ class BlzToast extends React.Component{
             Animated.timing(
                 this.animateOpacityValue,
                 {
-                toValue: 1,
-                duration: 500
+                    toValue: 1,
+                    duration: 500
                 }
             ).start(this.HideToastFunction(duration))
         });
@@ -52,8 +52,18 @@ class BlzToast extends React.Component{
         if(this.state.ShowToast) {
 
             return(
-                <Animated.View style = {[ styles.animatedToastView, { opacity: this.animateOpacityValue, top: (this.props.position == 'top') ? '10%' : '80%', backgroundColor: this.props.backgroundColor }]}>
-                    <Text numberOfLines = { 1 } style = {[ styles.ToastBoxInsideText, { color: this.props.textColor }]}>{ this.ToastMessage }</Text>
+                <Animated.View
+                    style = {
+                        [ styles.animatedToastView,
+                        {   opacity: this.animateOpacityValue,
+                            top: (this.props.position == 'top') ? '10%' : '80%',
+                            backgroundColor: this.props.backgroundColor }]
+                    }
+                >
+                    <Text
+                        numberOfLines = { this.ToastMessage.length % 30 ? this.ToastMessage.length % 30 : 1 }
+                        style = {[ styles.ToastBoxInsideText, { color: this.props.textColor }]}>{ this.ToastMessage }
+                    </Text>
                 </Animated.View>
             );
         } else {

@@ -12,20 +12,7 @@ import BlzToast from './ui/BlzToast';
 import Header from './Header';
 
 const timeUtils = require('../utils/time-utils');
-
-// import FontAwesome from '@expo/vector-icons/FontAwesome';
-// import { danger, blue, lightGrey, gold, lightBlue } from '../utils/colors';
-// import { connect } from 'react-redux'
-// import { resetState } from '../actions/index'
-
-// import {
-//     playerStartTimer, playerPauseTimer, chargePlayer, startTimer,
-//     pauseTimer
-// } from '../actions/index';
-
-// import { Utils } from '../utils/utils';
-// import { Settings } from 'http2';
-
+import { Utils } from '../utils/utils';
 class SettingsView extends Component {
 
     constructor(props) {
@@ -52,9 +39,14 @@ class SettingsView extends Component {
 
     onPriceSave() {
         let { pricePerHour } = this.state;
-        let { setTablePrice } = this.props;
+        let { setTablePrice, timer } = this.props;
         if (typeof pricePerHour === 'string' || pricePerHour instanceof String) {
             pricePerHour = pricePerHour.replace(/,/gi, ".");
+        }
+        /* TODO: Quick fix for errors when changing current players price per hour */
+        if (timer.status !== Utils.TIMER_STOPPED) {
+            this.refs.errorToast.ShowToastFunction('No podemos cambiar el precio de la mesa con jugadores en juego.');
+            return;
         }
         // check if the input is a valid number
         if(isFinite(pricePerHour) && pricePerHour != ''){
@@ -63,6 +55,7 @@ class SettingsView extends Component {
                 pricePerHour: pricePerHour.toString()
             });
             setTablePrice(pricePerHour);
+            this.refs.successToast.ShowToastFunction('Precio cambiado con éxito.');
         } else {
             this.refs.errorToast.ShowToastFunction('Introduce un precio correcto, por favor.');
         }
@@ -96,6 +89,7 @@ class SettingsView extends Component {
                         <FontAwesome name="save" size={40} />
                     </TouchableOpacity>
                 </View>
+                <BlzToast ref="successToast" backgroundColor="#3b9607" position="bottom"/>
                 <BlzToast ref="errorToast"  backgroundColor='#E91E63' position="bottom"/>
             </View>
         )
@@ -129,6 +123,7 @@ const styles = StyleSheet.create({
 function mapStateToProps(state) {
     return {
       pricePerHour: state.pricePerHour,
+      timer: state.timer,
     }
 }
 
