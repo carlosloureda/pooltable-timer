@@ -25,7 +25,7 @@ export default class App extends React.Component {
     persistor.purge();
   }
   render() {
-    this.resetLocalStorage()
+    // this.resetLocalStorage()
     return (
       <Provider store={store}>
         {/* the loading and persistor props are both required! */}
