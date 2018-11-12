@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row'
   },
   players: {
-    backgroundColor: 'yellow',
+    backgroundColor: '#E5E5E5',
     flex: 1,
     marginTop: 5
   },
