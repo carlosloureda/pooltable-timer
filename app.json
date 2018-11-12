@@ -1,8 +1,10 @@
 {
   "expo": {
-    "sdkVersion": "27.0.0",
     "name": "Pooltable Timer",
+    "version": "0.9.0",
+    "orientation": "portrait",
     "description": "El contador definitivo para llevar los tiempos de la mesa de billar",
+    "sdkVersion": "27.0.0",
     "splash": {
       "image": "./assets/images/splash.png"
     },
@@ -12,10 +14,10 @@
     "icon" : "./assets/icons/ic_launcher.png",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.balanze.pooltabletimer"
+      "bundleIdentifier": "com.carlosloureda.pooltabletimer"
     },
     "android": {
-      "package": "com.balanze.pooltabletimer"
+      "package": "com.carlosloureda.pooltabletimer"
     }
   }
 }
